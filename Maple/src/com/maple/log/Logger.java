@@ -5,8 +5,8 @@ import com.maple.log.writer.ILogWriter;
 import com.maple.log.writer.StubLogWriter;
 
 public class Logger {
-    private static StubLogWriter sStubLogWriter = new StubLogWriter();
-    private static ILogWriter sLogWriter = sStubLogWriter;
+    private static final StubLogWriter STUB_LOG_WRITER = new StubLogWriter();
+    private static ILogWriter sLogWriter = STUB_LOG_WRITER;
 
     private static final String DEFAULT_APPLICATION_TAG = "APP";
     private static String sApplicationTag = DEFAULT_APPLICATION_TAG;
@@ -20,7 +20,7 @@ public class Logger {
     }
 
     public synchronized static void clearLogger() {
-        sLogWriter = sStubLogWriter;
+        sLogWriter = STUB_LOG_WRITER;
     }
 
     public synchronized static void setApplicationTag(String applicationTag) {
