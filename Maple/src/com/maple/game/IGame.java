@@ -1,8 +1,7 @@
 package com.maple.game;
 
 import com.maple.game.exceptions.OperationFailedException;
-import com.maple.game.properties.GameProperties;
-import com.maple.game.time.GameTime;
+import com.maple.game.runner.GameTime;
 
 public interface IGame {
     void initialize() throws OperationFailedException;
@@ -14,6 +13,4 @@ public interface IGame {
     void cleanup();
 
     boolean shouldExit();
-
-    GameProperties getProperties();
 }
