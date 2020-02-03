@@ -1,10 +1,9 @@
 package com.maple.game.runner;
 
-import com.maple.game.IGame;
+import com.maple.game.GameProperties;
+import com.maple.game.IGameCreator;
 import com.maple.game.MapleGame;
 import com.maple.game.exceptions.OperationFailedException;
-import com.maple.game.properties.GameProperties;
-import com.maple.game.time.GameTime;
 import com.maple.log.Logger;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
@@ -13,10 +12,9 @@ public class GameRunner {
     private final MapleGame mMapleGame;
     private final int mTickRate;
 
-    public GameRunner(IGame game) {
-        mMapleGame = new MapleGame(game);
-        GameProperties gameProperties = mMapleGame.getProperties();
-        mTickRate = gameProperties.getTickRate();
+    public GameRunner(IGameCreator gameCreator, GameProperties gameProperties, int tickRate) {
+        mMapleGame = new MapleGame(gameCreator, gameProperties);
+        mTickRate = tickRate;
     }
 
     public void run() {
@@ -42,9 +40,9 @@ public class GameRunner {
             }
             mMapleGame.cleanup();
         } catch (OperationFailedException e) {
-            Logger.errorCore(e.toString());
+            Logger.errorCore("OPERATION_FAILED_EXCEPTION", e.getCause());
         } catch (Throwable throwable) {
-            Logger.errorCore("UNCAUGHT_EXCEPTION: " + throwable);
+            Logger.errorCore("UNCAUGHT_EXCEPTION", throwable);
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.maple.game.time;
+package com.maple.game.runner;
 
 public class GameTime {
     private final double mTotalGameTime;
