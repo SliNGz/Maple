@@ -6,6 +6,8 @@ import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.log.Logger;
 
+import static org.lwjgl.opengl.GL11.*;
+
 public class Game implements IGame {
     private GameContext mContext;
 
@@ -24,6 +26,8 @@ public class Game implements IGame {
 
     @Override
     public void render() {
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.23f, 0.11f, 0.11f, 1);
     }
 
     @Override
