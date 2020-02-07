@@ -4,7 +4,7 @@ import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.window.Window;
-import com.maple.graphics.window.WindowProperties;
+import com.maple.graphics.window.WindowCreationProperties;
 import com.maple.graphics.window.exceptions.WindowCreationFailedException;
 import com.maple.log.Logger;
 import com.maple.utils.GLFWHelper;
@@ -44,7 +44,7 @@ public class MapleGame implements IGame {
         try {
             Monitor monitor = GLFWHelper.getPrimaryMonitor();
             GLFWVidMode videoMode = GLFWHelper.getVideoMode(monitor);
-            mWindow = createWindow(videoMode, mGameProperties.getWindowProperties());
+            mWindow = createWindow(videoMode, mGameProperties.getWindowCreationProperties());
 
             Logger.infoCore("WINDOW_CREATED");
         } catch (MonitorRetrievalFailedException e) {
@@ -90,14 +90,14 @@ public class MapleGame implements IGame {
         return mGame.shouldExit() || GLFWHelper.shouldCloseWindow(mWindow);
     }
 
-    private Window createWindow(GLFWVidMode videoMode, WindowProperties properties) throws WindowCreationFailedException {
+    private Window createWindow(GLFWVidMode videoMode, WindowCreationProperties creationProperties) throws WindowCreationFailedException {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-        Window window = GLFWHelper.createWindow(properties);
+        Window window = GLFWHelper.createWindow(creationProperties);
 
         int x = (videoMode.width() - window.getWidth()) / 2;
         int y = (videoMode.height() - window.getHeight()) / 2;
-        GLFWHelper.setWindowPosition(window, x, y);
+        window.setPosition(x, y);
 
         GLFWHelper.makeContextCurrent(window);
         GLFWHelper.showWindow(window);

@@ -1,11 +1,11 @@
 package com.maple.graphics.window;
 
-public class WindowProperties {
+public class WindowCreationProperties {
     private String mTitle;
     private int mWidth;
     private int mHeight;
 
-    public WindowProperties(String title, int width, int height) {
+    public WindowCreationProperties(String title, int width, int height) {
         mTitle = title;
         mWidth = width;
         mHeight = height;
