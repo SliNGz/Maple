@@ -2,8 +2,9 @@ package com.maple.utils;
 
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.window.Window;
-import com.maple.graphics.window.WindowProperties;
+import com.maple.graphics.window.WindowCreationProperties;
 import com.maple.graphics.window.exceptions.WindowCreationFailedException;
+import com.maple.log.Logger;
 import com.maple.utils.exceptions.GLFWInitializationFailedException;
 import com.maple.utils.exceptions.MonitorRetrievalFailedException;
 import com.maple.utils.exceptions.VideoModeRetrievalFailedException;
@@ -42,29 +43,20 @@ public class GLFWHelper {
         return videoMode;
     }
 
-    public static Window createWindow(WindowProperties properties) throws WindowCreationFailedException {
-        long handle = glfwCreateWindow(properties.getWidth(), properties.getHeight(), properties.getTitle(), NULL, NULL);
+    public static Window createWindow(WindowCreationProperties creationProperties) throws WindowCreationFailedException {
+        int x = 0;
+        int y = 0;
+        int width = creationProperties.getWidth();
+        int height = creationProperties.getHeight();
+        String title = creationProperties.getTitle();
+
+        long handle = glfwCreateWindow(width, height, title, NULL, NULL);
         if (handle == NULL) {
             throw new WindowCreationFailedException();
         }
+        glfwSetWindowPos(handle, x, y);
 
-        return new Window(handle, properties);
-    }
-
-    public static void setWindowPosition(Window window, int x, int y) {
-        glfwSetWindowPos(window.getHandle(), x, y);
-    }
-
-    public static void setWindowSize(Window window, int width, int height) {
-        glfwSetWindowSize(window.getHandle(), width, height);
-    }
-
-    public static void setWindowWidth(Window window, int width) {
-        setWindowSize(window, width, window.getHeight());
-    }
-
-    public static void setWindowHeight(Window window, int height) {
-        setWindowSize(window, window.getWidth(), height);
+        return new Window(handle, x, y, width, height, title);
     }
 
     public static boolean shouldCloseWindow(Window window) {
