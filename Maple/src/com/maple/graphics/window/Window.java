@@ -9,7 +9,7 @@ public class Window {
         mProperties = properties;
     }
 
-    long getHandle() {
+    public long getHandle() {
         return mHandle;
     }
 
