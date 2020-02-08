@@ -7,6 +7,7 @@ import com.maple.game.exceptions.OperationFailedException;
 import com.maple.log.Logger;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 
 public class GameRunner {
     private final MapleGame mMapleGame;
@@ -31,7 +32,8 @@ public class GameRunner {
                 deltaTime = currentTime - lastTime;
                 accumulator += deltaTime;
                 lastTime = currentTime;
-
+                
+                glfwPollEvents();
                 if (accumulator >= tick) {
                     mMapleGame.update(new GameTime(currentTime, deltaTime));
                     accumulator -= tick;
