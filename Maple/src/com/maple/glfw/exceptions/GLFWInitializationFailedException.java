@@ -1,4 +1,4 @@
-package com.maple.utils.exceptions;
+package com.maple.glfw.exceptions;
 
 public class GLFWInitializationFailedException extends Exception {
 }

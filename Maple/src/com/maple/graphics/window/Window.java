@@ -1,7 +1,5 @@
 package com.maple.graphics.window;
 
-import com.maple.log.Logger;
-
 import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowSize;
 

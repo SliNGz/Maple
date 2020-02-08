@@ -2,15 +2,19 @@ package com.maple.game;
 
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
+import com.maple.glfw.GLFWHelper;
+import com.maple.glfw.exceptions.GLFWInitializationFailedException;
+import com.maple.glfw.exceptions.MonitorRetrievalFailedException;
+import com.maple.glfw.exceptions.VideoModeRetrievalFailedException;
+import com.maple.glfw.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.window.Window;
 import com.maple.graphics.window.WindowCreationProperties;
-import com.maple.graphics.window.exceptions.WindowCreationFailedException;
+import com.maple.input.keyboard.KeyCallback;
+import com.maple.input.keyboard.KeyboardState;
+import com.maple.input.keyboard.KeyboardUpdater;
+import com.maple.input.keyboard.Keymap;
 import com.maple.log.Logger;
-import com.maple.utils.GLFWHelper;
-import com.maple.utils.exceptions.GLFWInitializationFailedException;
-import com.maple.utils.exceptions.MonitorRetrievalFailedException;
-import com.maple.utils.exceptions.VideoModeRetrievalFailedException;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
@@ -21,6 +25,9 @@ public class MapleGame implements IGame {
     private final GameProperties mGameProperties;
 
     private Window mWindow;
+
+    private KeyboardUpdater mKeyboardUpdater;
+
     private IGame mGame;
 
     public MapleGame(IGameCreator gameCreator, GameProperties gameProperties) {
@@ -46,6 +53,11 @@ public class MapleGame implements IGame {
             GLFWVidMode videoMode = GLFWHelper.getVideoMode(monitor);
             mWindow = createWindow(videoMode, mGameProperties.getWindowCreationProperties());
 
+            KeyboardState keyboardState = new KeyboardState();
+            mKeyboardUpdater = new KeyboardUpdater(keyboardState, new Keymap());
+
+            GLFWHelper.setWindowKeyCallback(mWindow, new KeyCallback(keyboardState));
+
             Logger.infoCore("WINDOW_CREATED");
         } catch (MonitorRetrievalFailedException e) {
             Logger.errorCore("MONITOR_RETRIEVAL_FAILED");
@@ -60,13 +72,14 @@ public class MapleGame implements IGame {
 
         GL.createCapabilities();
 
-        GameContext gameContext = new GameContext(mWindow);
+        GameContext gameContext = new GameContext(mWindow, mKeyboardUpdater.getKeymap());
         mGame = mGameCreator.create(gameContext);
         mGame.initialize();
     }
 
     @Override
     public void update(GameTime gameTime) {
+        mKeyboardUpdater.update();
         mGame.update(gameTime);
     }
 

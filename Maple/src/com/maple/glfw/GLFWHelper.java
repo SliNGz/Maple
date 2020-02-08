@@ -1,13 +1,13 @@
-package com.maple.utils;
+package com.maple.glfw;
 
+import com.maple.glfw.exceptions.GLFWInitializationFailedException;
+import com.maple.glfw.exceptions.MonitorRetrievalFailedException;
+import com.maple.glfw.exceptions.VideoModeRetrievalFailedException;
+import com.maple.glfw.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.window.Window;
 import com.maple.graphics.window.WindowCreationProperties;
-import com.maple.graphics.window.exceptions.WindowCreationFailedException;
-import com.maple.log.Logger;
-import com.maple.utils.exceptions.GLFWInitializationFailedException;
-import com.maple.utils.exceptions.MonitorRetrievalFailedException;
-import com.maple.utils.exceptions.VideoModeRetrievalFailedException;
+import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -59,6 +59,10 @@ public class GLFWHelper {
         return new Window(handle, x, y, width, height, title);
     }
 
+    public static void destroyWindow(Window window) {
+        glfwDestroyWindow(window.getHandle());
+    }
+
     public static boolean shouldCloseWindow(Window window) {
         return glfwWindowShouldClose(window.getHandle());
     }
@@ -79,7 +83,7 @@ public class GLFWHelper {
         glfwSwapBuffers(window.getHandle());
     }
 
-    public static void destroyWindow(Window window) {
-        glfwDestroyWindow(window.getHandle());
+    public static void setWindowKeyCallback(Window window, GLFWKeyCallbackI keyCallback) {
+        glfwSetKeyCallback(window.getHandle(), keyCallback);
     }
 }

@@ -4,15 +4,21 @@ import com.maple.game.GameContext;
 import com.maple.game.IGame;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
+import com.maple.graphics.window.Window;
+import com.maple.input.keyboard.IKeyAction;
+import com.maple.input.keyboard.Keymap;
 import com.maple.log.Logger;
+import org.lwjgl.glfw.GLFW;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class Game implements IGame {
-    private GameContext mContext;
+    private Window mWindow;
+    private Keymap mKeymap;
 
     public Game(GameContext context) {
-        mContext = context;
+        mWindow = context.getWindow();
+        mKeymap = context.getKeymap();
     }
 
     @Override
