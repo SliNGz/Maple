@@ -1,15 +1,11 @@
 package com.maple.input.keyboard;
 
-import com.maple.log.Logger;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public class KeyboardState {
     private Map<Integer, KeyState> mStateMap;
-    private int mKeyModifiersMask;
+    private int mModifiers;
 
     public KeyboardState() {
         mStateMap = new HashMap<>();
@@ -23,11 +19,11 @@ public class KeyboardState {
         mStateMap.put(key, keyState);
     }
 
-    public int getKeyModifiersMask() {
-        return mKeyModifiersMask;
+    public int getModifiers() {
+        return mModifiers;
     }
 
-    public void setKeyModifiersMask(int keyModifiersMask) {
-        mKeyModifiersMask = keyModifiersMask;
+    public void setModifiers(int modifiers) {
+        mModifiers = modifiers;
     }
 }

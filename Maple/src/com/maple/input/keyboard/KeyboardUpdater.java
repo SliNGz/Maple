@@ -10,7 +10,7 @@ public class KeyboardUpdater {
     }
 
     public void update() {
-        int keyModifiersMask = mKeyboardState.getKeyModifiersMask();
+        int modifiers = mKeyboardState.getModifiers();
 
         mKeymap.iterate((key, keyAction) -> {
             KeyState keyState = mKeyboardState.getKeyState(key);
@@ -20,7 +20,7 @@ public class KeyboardUpdater {
             } else if (keyState == KeyState.DOWN) {
                 keyAction.onKeyDown();
             }
-        }, keyModifiersMask);
+        }, modifiers);
     }
 
     public Keymap getKeymap() {
