@@ -30,10 +30,10 @@ public class ConsoleLogWriter implements ILogWriter {
     private void log(String color, String tag, String level, String message) {
         LocalTime time = LocalTime.now();
         String logMessage = String.format("%s[%s][%s][%s] %s%s",
-                color,
-                time.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)),
-                tag, level, message,
-                ConsoleColors.RESET);
+                                          color,
+                                          time.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)),
+                                          tag, level, message,
+                                          ConsoleColors.RESET);
 
         System.out.println(logMessage);
     }

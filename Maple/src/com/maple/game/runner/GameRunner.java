@@ -32,7 +32,7 @@ public class GameRunner {
                 deltaTime = currentTime - lastTime;
                 accumulator += deltaTime;
                 lastTime = currentTime;
-                
+
                 glfwPollEvents();
                 if (accumulator >= tick) {
                     mMapleGame.update(new GameTime(currentTime, deltaTime));
