@@ -5,10 +5,9 @@ import com.maple.game.IGame;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.window.Window;
-import com.maple.input.keyboard.IKeyAction;
 import com.maple.input.keyboard.Keymap;
 import com.maple.log.Logger;
-import org.lwjgl.glfw.GLFW;
+import com.maple.math.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
 

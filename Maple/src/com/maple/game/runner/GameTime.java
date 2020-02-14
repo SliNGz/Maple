@@ -13,5 +13,7 @@ public class GameTime {
         return mTotalGameTime;
     }
 
-    public double getDeltaTime() { return mDeltaTime; }
+    public double getDeltaTime() {
+        return mDeltaTime;
+    }
 }
