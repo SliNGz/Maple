@@ -1,4 +1,4 @@
-package com.maple.input.keyboard;
+package com.maple.input.keyboard.state;
 
 public enum KeyState {
     UP,

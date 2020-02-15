@@ -1,15 +1,16 @@
-package com.maple.glfw;
+package com.maple.graphics;
 
-import com.maple.glfw.exceptions.GLFWInitializationFailedException;
-import com.maple.glfw.exceptions.MonitorRetrievalFailedException;
-import com.maple.glfw.exceptions.VideoModeRetrievalFailedException;
-import com.maple.glfw.exceptions.WindowCreationFailedException;
+import com.maple.graphics.exceptions.GLFWInitializationFailedException;
+import com.maple.graphics.exceptions.MonitorRetrievalFailedException;
+import com.maple.graphics.exceptions.VideoModeRetrievalFailedException;
+import com.maple.graphics.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.window.Window;
 import com.maple.graphics.window.WindowCreationProperties;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -85,5 +86,9 @@ public class GLFWHelper {
 
     public static void setWindowKeyCallback(Window window, GLFWKeyCallbackI keyCallback) {
         glfwSetKeyCallback(window.getHandle(), keyCallback);
+    }
+
+    public static void freeCallbacks(Window window) {
+        glfwFreeCallbacks(window.getHandle());
     }
 }

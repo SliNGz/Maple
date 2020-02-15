@@ -1,5 +1,7 @@
 package com.maple.input.keyboard;
 
+import com.maple.input.keyboard.state.KeyState;
+import com.maple.input.keyboard.state.KeyboardState;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
