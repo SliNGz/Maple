@@ -5,6 +5,7 @@ import com.maple.graphics.shader.exceptions.ShaderCreationFailedException;
 import com.maple.graphics.shader.exceptions.ShaderProgramCreationFailedException;
 import com.maple.graphics.shader.program.ShaderProgram;
 import com.maple.graphics.shader.program.ShaderProgramCreator;
+import com.maple.graphics.shader.uniform.ShaderUniformController;
 import com.maple.log.Logger;
 
 import static org.lwjgl.opengl.GL41.*;
@@ -19,8 +20,9 @@ public class ShaderCreator {
             glShaderSource(shader, shaderSource);
             compileShader(shader);
             ShaderProgram program = ShaderProgramCreator.create(shader);
+            ShaderUniformController uniformController = new ShaderUniformController(program);
 
-            return new Shader(shaderType, program);
+            return new Shader(shaderType, program, uniformController);
         } catch (ShaderCompilationFailedException | ShaderProgramCreationFailedException e) {
             throw new ShaderCreationFailedException(e);
         } finally {
@@ -50,7 +52,7 @@ public class ShaderCreator {
 
             int maxLength = maxLengthBuffer[0];
             String log = glGetShaderInfoLog(shader, maxLength);
-            Logger.errorCore("SHADER_COMPILATION_FAILED: \n" + log);
+            Logger.errorCore("SHADER_COMPILATION_FAILED\n" + log);
 
             throw new ShaderCompilationFailedException();
         }

@@ -24,7 +24,7 @@ public class ShaderManager implements IShaderManager {
         Shader shader = mShaderLoader.load(shaderFile);
         mShaders.add(shader);
 
-        Logger.infoCore(String.format("SHADER_LOADED_SUCCESSFULLY SHADER: %s", shaderFile.getName()));
+        Logger.infoCore(String.format("SHADER_LOADED_SUCCESSFULLY SHADER:%s", shaderFile.getName()));
 
         return shader;
     }

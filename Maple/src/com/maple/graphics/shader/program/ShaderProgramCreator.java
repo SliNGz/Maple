@@ -51,7 +51,7 @@ public class ShaderProgramCreator {
 
             int maxLength = maxLengthBuffer[0];
             String log = glGetProgramInfoLog(program, maxLength);
-            Logger.errorCore("SHADER_PROGRAM_LINKAGE_FAILED: \n" + log);
+            Logger.errorCore("SHADER_PROGRAM_LINKAGE_FAILED\n" + log);
 
             throw new ShaderProgramLinkageFailedException();
         }
