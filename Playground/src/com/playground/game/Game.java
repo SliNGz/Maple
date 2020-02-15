@@ -4,20 +4,25 @@ import com.maple.game.GameContext;
 import com.maple.game.IGame;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
+import com.maple.graphics.shader.binder.IShaderBinder;
+import com.maple.graphics.shader.manager.IShaderManager;
 import com.maple.graphics.window.Window;
-import com.maple.input.keyboard.Keymap;
+import com.maple.input.keyboard.map.IKeymap;
 import com.maple.log.Logger;
-import com.maple.math.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class Game implements IGame {
     private Window mWindow;
-    private Keymap mKeymap;
+    private IKeymap mKeymap;
+    private IShaderManager mShaderManager;
+    private IShaderBinder mShaderBinder;
 
     public Game(GameContext context) {
         mWindow = context.getWindow();
         mKeymap = context.getKeymap();
+        mShaderManager = context.getShaderManager();
+        mShaderBinder = context.getShaderBinder();
     }
 
     @Override
@@ -32,7 +37,7 @@ public class Game implements IGame {
     @Override
     public void render() {
         glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(0.23f, 0.11f, 0.11f, 1);
+        glClearColor(1.0F, 0.5F, 0.0F, 1.0F);
     }
 
     @Override

@@ -1,5 +1,9 @@
 package com.maple.input.keyboard;
 
+import com.maple.input.keyboard.map.Keymap;
+import com.maple.input.keyboard.state.KeyState;
+import com.maple.input.keyboard.state.KeyboardState;
+
 public class KeyboardUpdater {
     private KeyboardState mKeyboardState;
     private Keymap mKeymap;
@@ -21,9 +25,5 @@ public class KeyboardUpdater {
                 keyAction.onKeyDown();
             }
         }, modifiers);
-    }
-
-    public Keymap getKeymap() {
-        return mKeymap;
     }
 }

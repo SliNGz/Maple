@@ -1,4 +1,4 @@
-package com.maple.input.keyboard;
+package com.maple.input.keyboard.state;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.maple.glfw.exceptions;
+package com.maple.graphics.exceptions;
 
 public class MonitorRetrievalFailedException extends Exception {
 }
