@@ -82,8 +82,7 @@ public class MapleGame implements IGame {
         GLFWHelper.freeCallbacks(mWindow);
         GLFWHelper.destroyWindow(mWindow);
         GLFWHelper.terminate();
-
-        glfwSetErrorCallback(null).free();
+        GLFWHelper.freeErrorCallback();
 
         Logger.clearLogger();
     }

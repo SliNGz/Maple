@@ -7,6 +7,7 @@ import com.maple.graphics.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.window.Window;
 import com.maple.graphics.window.WindowCreationProperties;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 
@@ -24,6 +25,13 @@ public class GLFWHelper {
 
     public static void terminate() {
         glfwTerminate();
+    }
+
+    public static void freeErrorCallback() {
+        GLFWErrorCallback glfwErrorCallback = glfwSetErrorCallback(null);
+        if (glfwErrorCallback != null) {
+            glfwErrorCallback.free();
+        }
     }
 
     public static Monitor getPrimaryMonitor() throws MonitorRetrievalFailedException {
