@@ -35,6 +35,10 @@ public class Matrix4f {
         otherElements.rewind();
     }
 
+    public FloatBuffer getElements() {
+        return mElements;
+    }
+
     private int getIndex(int x, int y) {
         return x * COLUMNS_AMOUNT + y;
     }
@@ -122,5 +126,74 @@ public class Matrix4f {
                             0, 1, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1);
+    }
+
+    public static Matrix4f createLookAt(Vector3f eye, Vector3f target, Vector3f up) {
+        Vector3f zAxis = Vector3f.normalize(Vector3f.subtract(target, eye));
+        Vector3f xAxis = Vector3f.normalize(Vector3f.cross(up, zAxis));
+        Vector3f yAxis = Vector3f.cross(zAxis, xAxis);
+
+        float m00 = xAxis.X;
+        float m10 = xAxis.Y;
+        float m20 = xAxis.Z;
+        float m30 = -Vector3f.dot(xAxis, eye);
+
+        float m01 = yAxis.X;
+        float m11 = yAxis.Y;
+        float m21 = yAxis.Z;
+        float m31 = -Vector3f.dot(yAxis, eye);
+
+        float m02 = -zAxis.X;
+        float m12 = -zAxis.Y;
+        float m22 = -zAxis.Z;
+        float m32 = Vector3f.dot(zAxis, eye);
+
+        return new Matrix4f(m00, m10, m20, m30,
+                            m01, m11, m21, m31,
+                            m02, m12, m22, m32,
+                            0, 0, 0, 1);
+    }
+
+    public static Matrix4f createPerspective(float fov, float aspectRatio, float nearPlane, float farPlane) {
+        float constant = 1.0F / (float) Math.tan(MathHelper.toRadians(fov * 0.5F));
+        float planesSum = farPlane + nearPlane;
+        float negatedPlanesDiff = nearPlane - farPlane;
+
+        float m00 = constant / aspectRatio;
+        float m11 = constant;
+        float m22 = planesSum / negatedPlanesDiff;
+        float m32 = (2 * farPlane * nearPlane) / negatedPlanesDiff;
+        float m33 = -1.0F;
+
+        return new Matrix4f(m00, 0, 0, 0,
+                            0, m11, 0, 0,
+                            0, 0, m22, m32,
+                            0, 0, m33, 0);
+    }
+
+    public static Matrix4f createTranslation(Vector3f position) {
+        float m30 = position.X;
+        float m31 = position.Y;
+        float m32 = position.Z;
+
+        return new Matrix4f(1, 0, 0, m30,
+                            0, 1, 0, m31,
+                            0, 0, 1, m32,
+                            0, 0, 0, 1);
+    }
+
+    public static Matrix4f createScale(Vector3f scale) {
+        float m00 = scale.X;
+        float m11 = scale.Y;
+        float m22 = scale.Z;
+
+        return new Matrix4f(m00, 0, 0, 0,
+                            0, m11, 0, 0,
+                            0, 0, m22, 0,
+                            0, 0, 0, 1);
+    }
+
+    public static Matrix4f createScale(float scale) {
+        return createScale(new Vector3f(scale, scale, scale));
     }
 }

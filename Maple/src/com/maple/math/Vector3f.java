@@ -132,4 +132,16 @@ public class Vector3f {
     public static float dot(Vector3f left, Vector3f right) {
         return left.X * right.X + left.Y * right.Y + left.Z * right.Z;
     }
+
+    public static Vector3f cross(Vector3f left, Vector3f right) {
+        return new Vector3f(left.Y * right.Z - left.Z * right.Y,
+                            left.Z * right.X - left.X * right.Z,
+                            left.X * right.Y - left.Y * right.X);
+    }
+
+    public static Vector3f createLookAt(float yaw, float pitch) {
+        return new Vector3f((float) (-Math.sin(yaw) * Math.cos(pitch)),
+                            (float) Math.sin(pitch),
+                            (float) (-Math.cos(yaw) * Math.cos(pitch)));
+    }
 }

@@ -69,6 +69,10 @@ public class Window {
         setSize(mWidth, height);
     }
 
+    public float getAspectRatio() {
+        return mWidth / (float) mHeight;
+    }
+
     public String getTitle() {
         return mTitle;
     }
