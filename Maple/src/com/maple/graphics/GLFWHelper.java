@@ -7,9 +7,9 @@ import com.maple.graphics.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.window.Window;
 import com.maple.graphics.window.WindowCreationProperties;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
-import org.lwjgl.glfw.GLFWVidMode;
+import com.maple.input.InputModeCallbackDispatcher;
+import com.maple.math.Vector2f;
+import org.lwjgl.glfw.*;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -94,6 +94,35 @@ public class GLFWHelper {
 
     public static void setWindowKeyCallback(Window window, GLFWKeyCallbackI keyCallback) {
         glfwSetKeyCallback(window.getHandle(), keyCallback);
+    }
+
+    public static void setWindowCursorPositionCallback(Window window, GLFWCursorPosCallbackI cursorPosCallback) {
+        glfwSetCursorPosCallback(window.getHandle(), cursorPosCallback);
+    }
+
+    public static void setWindowMouseButtonCallback(Window window, GLFWMouseButtonCallbackI mouseButtonCallback) {
+        glfwSetMouseButtonCallback(window.getHandle(), mouseButtonCallback);
+    }
+
+    public static Vector2f getCursorPosition(Window window) {
+        double[] xBuffer = new double[1];
+        double[] yBuffer = new double[1];
+        glfwGetCursorPos(window.getHandle(), xBuffer, yBuffer);
+
+        return new Vector2f((float) xBuffer[0], (float) yBuffer[0]);
+    }
+
+    public static void setCursorPosition(Window window, Vector2f position) {
+        glfwSetCursorPos(window.getHandle(), position.X, position.Y);
+    }
+
+    public static int getWindowInputMode(Window window, int mode) {
+        return glfwGetInputMode(window.getHandle(), mode);
+    }
+
+    public static void setWindowInputMode(Window window, int mode, int value) {
+        InputModeCallbackDispatcher.dispatch(window, mode, value);
+        glfwSetInputMode(window.getHandle(), mode, value);
     }
 
     public static void freeCallbacks(Window window) {

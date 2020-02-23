@@ -33,6 +33,10 @@ public class PerspectiveCamera implements ICamera {
         updateViewProjectionMatrix();
     }
 
+    public void addPosition(Vector3f position) {
+        setPosition(Vector3f.add(mPosition, position));
+    }
+
     public Vector3f getRotation() {
         return mRotation;
     }
@@ -40,6 +44,10 @@ public class PerspectiveCamera implements ICamera {
     public void setRotation(Vector3f rotation) {
         setViewFields(mPosition, rotation, mUp);
         updateViewProjectionMatrix();
+    }
+
+    public void addRotation(Vector3f rotation) {
+        setRotation(Vector3f.add(mRotation, rotation));
     }
 
     public Vector3f getUp() {
@@ -93,7 +101,7 @@ public class PerspectiveCamera implements ICamera {
         mRotation.X = MathHelper.clampPitch(rotation.X);
         mRotation.Y = MathHelper.wrapAngle(rotation.Y);
         mUp = up;
-        Vector3f lookAt = Vector3f.createLookAt(mRotation.Y, mRotation.X);
+        Vector3f lookAt = Vector3f.createLookAt(mRotation.X, mRotation.Y);
         mView = Matrix4f.createLookAt(mPosition, Vector3f.add(mPosition, lookAt), mUp);
     }
 

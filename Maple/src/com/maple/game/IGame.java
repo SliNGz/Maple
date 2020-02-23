@@ -8,7 +8,7 @@ public interface IGame {
 
     void update(GameTime gameTime);
 
-    void render();
+    void render(float alpha);
 
     void cleanup();
 
