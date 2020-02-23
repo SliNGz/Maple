@@ -15,6 +15,10 @@ public class Vector3f {
         this(0, 0, 0);
     }
 
+    public Vector3f(Vector2f vector2f, float z) {
+        this(vector2f.X, vector2f.Y, z);
+    }
+
     public Vector3f(Vector3f other) {
         this(other.X, other.Y, other.Z);
     }
@@ -129,6 +133,12 @@ public class Vector3f {
         return new Vector3f(vector).normalize();
     }
 
+    public static float distance(Vector3f left, Vector3f right) {
+        return (float) Math.sqrt(Math.pow(left.X - right.X, 2) +
+                                 Math.pow(left.Y - right.Y, 2) +
+                                 Math.pow(left.Z - right.Z, 2));
+    }
+
     public static float dot(Vector3f left, Vector3f right) {
         return left.X * right.X + left.Y * right.Y + left.Z * right.Z;
     }
@@ -139,9 +149,15 @@ public class Vector3f {
                             left.X * right.Y - left.Y * right.X);
     }
 
-    public static Vector3f createLookAt(float yaw, float pitch) {
-        return new Vector3f((float) (-Math.sin(yaw) * Math.cos(pitch)),
+    public static Vector3f lerp(Vector3f startValue, Vector3f endValue, float amount) {
+        return new Vector3f(MathHelper.lerp(startValue.X, endValue.X, amount),
+                            MathHelper.lerp(startValue.Y, endValue.Y, amount),
+                            MathHelper.lerp(startValue.Z, endValue.Z, amount));
+    }
+
+    public static Vector3f createLookAt(float pitch, float yaw) {
+        return new Vector3f((float) (Math.cos(pitch) * -Math.sin(yaw)),
                             (float) Math.sin(pitch),
-                            (float) (-Math.cos(yaw) * Math.cos(pitch)));
+                            (float) (Math.cos(pitch) * -Math.cos(yaw)));
     }
 }

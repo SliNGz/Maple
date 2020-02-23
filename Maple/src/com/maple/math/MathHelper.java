@@ -27,4 +27,8 @@ public class MathHelper {
     public static float clampPitch(float pitch) {
         return clamp(pitch, (float) -Math.PI / 2.0F + 0.0001F, (float) Math.PI / 2.0F - 0.0001F);
     }
+
+    public static float lerp(float startValue, float endValue, float amount) {
+        return startValue + (endValue - startValue) * amount;
+    }
 }

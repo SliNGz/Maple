@@ -13,15 +13,17 @@ import com.maple.graphics.shader.binder.ShaderBinder;
 import com.maple.graphics.shader.binder.ShaderBinderHelper;
 import com.maple.graphics.shader.manager.ShaderManager;
 import com.maple.graphics.window.Window;
+import com.maple.input.InputModeCallbackDispatcher;
 import com.maple.input.keyboard.KeyCallback;
 import com.maple.input.keyboard.KeyboardUpdater;
 import com.maple.input.keyboard.map.Keymap;
 import com.maple.input.keyboard.state.KeyboardState;
+import com.maple.input.mouse.MousePositionCallbackDispatcher;
 import com.maple.log.Logger;
+import com.maple.math.Vector2f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -33,6 +35,7 @@ public class MapleGame implements IGame {
     private Keymap mKeymap;
     private ShaderManager mShaderManager;
     private ShaderBinder mShaderBinder;
+    private MousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
 
     private KeyboardUpdater mKeyboardUpdater;
 
@@ -53,9 +56,11 @@ public class MapleGame implements IGame {
         initializeWindow();
         initializeGL();
         initializeKeyboard();
+        initializeMouse();
         initializeShaderManager();
 
-        GameContext gameContext = new GameContext(mWindow, mKeymap, mShaderManager, mShaderBinder);
+        GameContext gameContext = new GameContext(mWindow, mKeymap, mShaderManager, mShaderBinder,
+                                                  mMousePositionCallbackDispatcher);
         mGame = mGameCreator.create(gameContext);
         mGame.initialize();
     }
@@ -67,8 +72,8 @@ public class MapleGame implements IGame {
     }
 
     @Override
-    public void render() {
-        mGame.render();
+    public void render(float alpha) {
+        mGame.render(alpha);
         GLFWHelper.swapBuffers(mWindow);
     }
 
@@ -133,7 +138,7 @@ public class MapleGame implements IGame {
 
     private void initializeGL() {
         GL.createCapabilities();
-        GLUtil.setupDebugMessageCallback(System.err);
+//        GLUtil.setupDebugMessageCallback(System.err);
     }
 
     private void initializeKeyboard() {
@@ -142,6 +147,17 @@ public class MapleGame implements IGame {
         mKeyboardUpdater = new KeyboardUpdater(keyboardState, mKeymap);
 
         GLFWHelper.setWindowKeyCallback(mWindow, new KeyCallback(keyboardState));
+    }
+
+    private void initializeMouse() {
+        GLFWHelper.setCursorPosition(mWindow, new Vector2f(0, 0));
+
+        mMousePositionCallbackDispatcher = new MousePositionCallbackDispatcher(mWindow);
+        GLFWHelper.setWindowCursorPositionCallback(mWindow, mMousePositionCallbackDispatcher);
+        InputModeCallbackDispatcher.addCallback(mMousePositionCallbackDispatcher);
+
+        GLFWHelper.setWindowInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        GLFWHelper.setWindowInputMode(mWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 
     private void initializeShaderManager() {
