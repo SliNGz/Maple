@@ -34,8 +34,9 @@ public class GameRunner {
             while (!mMapleGame.shouldExit()) {
                 currentTime = glfwGetTime();
                 deltaTime = currentTime - lastTime;
-                accumulator += deltaTime;
                 lastTime = currentTime;
+
+                accumulator += deltaTime;
 
                 glfwPollEvents();
                 while (accumulator >= tick) {

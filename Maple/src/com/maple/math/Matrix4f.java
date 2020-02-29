@@ -1,6 +1,6 @@
 package com.maple.math;
 
-import com.maple.utils.BufferUtils;
+import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.util.Objects;
@@ -12,7 +12,8 @@ public class Matrix4f {
     private FloatBuffer mElements;
 
     public Matrix4f() {
-        mElements = BufferUtils.createDirectFloatBuffer(COLUMNS_AMOUNT * ROWS_AMOUNT);
+        mElements = BufferUtils.createFloatBuffer(COLUMNS_AMOUNT * ROWS_AMOUNT);
+        mElements.rewind();
     }
 
     public Matrix4f(float m00, float m10, float m20, float m30,
