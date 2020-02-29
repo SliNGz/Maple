@@ -25,4 +25,16 @@ public class ShaderBinder implements IShaderBinder {
     public ProgramPipeline getPipeline() {
         return mPipeline;
     }
+
+    public static ShaderBinder create() {
+        return new ShaderBinder(GLHelper.createPipeline());
+    }
+
+    public static void setCurrentBinder(ShaderBinder shaderBinder) {
+        GLHelper.bindPipeline(shaderBinder.getPipeline());
+    }
+
+    public static void destroy(ShaderBinder shaderBinder) {
+        GLHelper.deletePipeline(shaderBinder.getPipeline());
+    }
 }

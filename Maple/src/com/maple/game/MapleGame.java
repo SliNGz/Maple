@@ -10,7 +10,6 @@ import com.maple.graphics.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.shader.ShaderLoader;
 import com.maple.graphics.shader.binder.ShaderBinder;
-import com.maple.graphics.shader.binder.ShaderBinderHelper;
 import com.maple.graphics.shader.manager.ShaderManager;
 import com.maple.graphics.window.Window;
 import com.maple.input.InputModeCallbackDispatcher;
@@ -24,6 +23,7 @@ import com.maple.math.Vector2f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -81,7 +81,7 @@ public class MapleGame implements IGame {
     public void cleanup() {
         mGame.cleanup();
 
-        ShaderBinderHelper.destroy(mShaderBinder);
+        ShaderBinder.destroy(mShaderBinder);
         mShaderManager.cleanup();
 
         GLFWHelper.freeCallbacks(mWindow);
@@ -138,7 +138,7 @@ public class MapleGame implements IGame {
 
     private void initializeGL() {
         GL.createCapabilities();
-//        GLUtil.setupDebugMessageCallback(System.err);
+        GLUtil.setupDebugMessageCallback(System.err);
     }
 
     private void initializeKeyboard() {
@@ -164,7 +164,7 @@ public class MapleGame implements IGame {
         ShaderLoader shaderLoader = new ShaderLoader();
         mShaderManager = new ShaderManager(shaderLoader);
 
-        mShaderBinder = ShaderBinderHelper.create();
-        ShaderBinderHelper.setCurrentBinder(mShaderBinder);
+        mShaderBinder = ShaderBinder.create();
+        ShaderBinder.setCurrentBinder(mShaderBinder);
     }
 }

@@ -15,6 +15,16 @@ public class MathHelper {
         return value;
     }
 
+    public static int clamp(int value, int min, int max) {
+        if (value < min) {
+            return min;
+        } else if (value > max) {
+            return max;
+        }
+
+        return value;
+    }
+
     public static float wrapAngle(float angle) {
         if (angle <= 0)
             angle += Math.PI * 2;
