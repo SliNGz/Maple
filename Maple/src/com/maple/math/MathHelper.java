@@ -1,8 +1,10 @@
 package com.maple.math;
 
 public class MathHelper {
+    public static float PI = (float) Math.PI;
+
     public static float toRadians(float degrees) {
-        return degrees * ((float) Math.PI / 180.0F);
+        return degrees * (PI / 180.0F);
     }
 
     public static float clamp(float value, float min, float max) {

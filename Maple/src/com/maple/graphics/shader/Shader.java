@@ -4,6 +4,8 @@ import com.maple.graphics.shader.program.ShaderProgram;
 import com.maple.graphics.shader.uniform.ShaderUniformController;
 
 public class Shader {
+    public static final String MVP_UNIFORM_NAME = "u_mvp";
+
     private final ShaderType mType;
     private final ShaderProgram mProgram;
     private final ShaderUniformController mUniformController;

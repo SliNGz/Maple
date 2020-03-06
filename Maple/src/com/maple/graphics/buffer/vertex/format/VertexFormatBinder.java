@@ -6,7 +6,7 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 
 public class VertexFormatBinder {
-    public static void bind(VertexFormat vertexFormat) {
+    public void bind(VertexFormat vertexFormat) {
         IVertexFormatElement[] elements = vertexFormat.getElements();
 
         int index = 0;

@@ -13,7 +13,7 @@ import static org.lwjgl.opengl.GL41.*;
 public class ShaderCreator {
     private static final int SHADER_CREATION_ERROR = 0;
 
-    public static Shader create(ShaderType shaderType, String shaderSource) throws ShaderCreationFailedException {
+    public Shader create(ShaderType shaderType, String shaderSource) throws ShaderCreationFailedException {
         int shader = createShader(shaderType);
 
         try {
@@ -30,7 +30,7 @@ public class ShaderCreator {
         }
     }
 
-    private static int createShader(ShaderType shaderType) throws ShaderCreationFailedException {
+    private int createShader(ShaderType shaderType) throws ShaderCreationFailedException {
         int shader = glCreateShader(shaderType.getValue());
         if (shader == SHADER_CREATION_ERROR) {
             throw new ShaderCreationFailedException();
@@ -39,7 +39,7 @@ public class ShaderCreator {
         return shader;
     }
 
-    private static void compileShader(int shader) throws ShaderCompilationFailedException {
+    private void compileShader(int shader) throws ShaderCompilationFailedException {
         glCompileShader(shader);
 
         int[] compilationStatusBuffer = new int[1];
@@ -56,5 +56,10 @@ public class ShaderCreator {
 
             throw new ShaderCompilationFailedException();
         }
+    }
+
+    public void destroy(Shader shader) {
+        ShaderProgram shaderProgram = shader.getProgram();
+        glDeleteProgram(shaderProgram.getHandle());
     }
 }
