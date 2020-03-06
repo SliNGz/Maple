@@ -1,6 +1,5 @@
 package com.maple.graphics.shader;
 
-import com.maple.graphics.GLHelper;
 import com.maple.graphics.shader.exceptions.*;
 import com.maple.utils.FileUtils;
 import com.maple.utils.exceptions.NoFileExtensionException;
@@ -8,12 +7,18 @@ import com.maple.utils.exceptions.NoFileExtensionException;
 import java.io.*;
 
 public class ShaderLoader {
+    private ShaderCreator mShaderCreator;
+
+    public ShaderLoader(ShaderCreator shaderCreator) {
+        mShaderCreator = shaderCreator;
+    }
+
     public Shader load(File shaderFile) throws ShaderLoadFailedException {
         try {
             ShaderType shaderType = getShaderType(shaderFile);
             String shaderSource = getShaderSource(shaderFile);
 
-            return GLHelper.createShader(shaderType, shaderSource);
+            return mShaderCreator.create(shaderType, shaderSource);
         } catch (ShaderTypeResolutionFailedException | ShaderSourceRetrievalException | ShaderCreationFailedException e) {
             throw new ShaderLoadFailedException(e);
         }
@@ -55,5 +60,9 @@ public class ShaderLoader {
         }
 
         return stringBuilder.toString();
+    }
+
+    public void unload(Shader shader) {
+        mShaderCreator.destroy(shader);
     }
 }

@@ -20,7 +20,7 @@ public class Color {
     }
 
     public Color(float r, float g, float b, float a) {
-        this((int)(r * 255), (int)(g * 255), (int)(b * 255), (int)(a * 255));
+        this((int) (r * 255), (int) (g * 255), (int) (b * 255), (int) (a * 255));
     }
 
     public Color(float r, float g, float b) {

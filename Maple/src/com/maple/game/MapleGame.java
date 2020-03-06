@@ -3,13 +3,20 @@ package com.maple.game;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.GLFWHelper;
+import com.maple.graphics.GraphicsManager;
+import com.maple.graphics.buffer.BufferBinder;
+import com.maple.graphics.buffer.index.IndexBufferCreator;
+import com.maple.graphics.buffer.vertex.VertexArrayCreator;
+import com.maple.graphics.buffer.vertex.format.VertexFormatBinder;
 import com.maple.graphics.exceptions.GLFWInitializationFailedException;
 import com.maple.graphics.exceptions.MonitorRetrievalFailedException;
 import com.maple.graphics.exceptions.VideoModeRetrievalFailedException;
 import com.maple.graphics.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
+import com.maple.graphics.shader.ShaderCreator;
 import com.maple.graphics.shader.ShaderLoader;
 import com.maple.graphics.shader.binder.ShaderBinder;
+import com.maple.graphics.shader.binder.ShaderBinderCreator;
 import com.maple.graphics.shader.manager.ShaderManager;
 import com.maple.graphics.window.Window;
 import com.maple.input.InputModeCallbackDispatcher;
@@ -20,6 +27,7 @@ import com.maple.input.keyboard.state.KeyboardState;
 import com.maple.input.mouse.MousePositionCallbackDispatcher;
 import com.maple.log.Logger;
 import com.maple.math.Vector2f;
+import com.maple.renderer.Renderer;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -32,9 +40,13 @@ public class MapleGame implements IGame {
     private final GameProperties mGameProperties;
 
     private Window mWindow;
+    private ShaderBinderCreator mShaderBinderCreator;
+    private ShaderBinder mShaderBinder;
+    private Renderer mRenderer;
+    private GraphicsManager mGraphicsManager;
+
     private Keymap mKeymap;
     private ShaderManager mShaderManager;
-    private ShaderBinder mShaderBinder;
     private MousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
 
     private KeyboardUpdater mKeyboardUpdater;
@@ -58,8 +70,10 @@ public class MapleGame implements IGame {
         initializeKeyboard();
         initializeMouse();
         initializeShaderManager();
+        initializeRenderer();
+        initializeGraphicsManager();
 
-        GameContext gameContext = new GameContext(mWindow, mKeymap, mShaderManager, mShaderBinder,
+        GameContext gameContext = new GameContext(mGraphicsManager, mKeymap, mShaderManager,
                                                   mMousePositionCallbackDispatcher);
         mGame = mGameCreator.create(gameContext);
         mGame.initialize();
@@ -81,7 +95,7 @@ public class MapleGame implements IGame {
     public void cleanup() {
         mGame.cleanup();
 
-        ShaderBinder.destroy(mShaderBinder);
+        mShaderBinderCreator.destroy(mShaderBinder);
         mShaderManager.cleanup();
 
         GLFWHelper.freeCallbacks(mWindow);
@@ -161,10 +175,24 @@ public class MapleGame implements IGame {
     }
 
     private void initializeShaderManager() {
-        ShaderLoader shaderLoader = new ShaderLoader();
+        ShaderCreator shaderCreator = new ShaderCreator();
+        ShaderLoader shaderLoader = new ShaderLoader(shaderCreator);
         mShaderManager = new ShaderManager(shaderLoader);
+    }
 
-        mShaderBinder = ShaderBinder.create();
-        ShaderBinder.setCurrentBinder(mShaderBinder);
+    private void initializeRenderer() {
+        mShaderBinderCreator = new ShaderBinderCreator();
+        mShaderBinder = mShaderBinderCreator.create();
+
+        BufferBinder bufferBinder = new BufferBinder();
+
+        mRenderer = new Renderer(mShaderBinder, bufferBinder);
+    }
+
+    private void initializeGraphicsManager() {
+        mGraphicsManager = new GraphicsManager(mWindow,
+                                               new VertexArrayCreator(new VertexFormatBinder()),
+                                               new IndexBufferCreator(),
+                                               mRenderer);
     }
 }

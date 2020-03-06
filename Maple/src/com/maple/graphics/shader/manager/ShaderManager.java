@@ -1,6 +1,5 @@
 package com.maple.graphics.shader.manager;
 
-import com.maple.graphics.GLHelper;
 import com.maple.graphics.shader.Shader;
 import com.maple.graphics.shader.ShaderLoader;
 import com.maple.graphics.shader.exceptions.ShaderLoadFailedException;
@@ -31,7 +30,7 @@ public class ShaderManager implements IShaderManager {
 
     public void cleanup() {
         for (Shader shader : mShaders) {
-            GLHelper.destroyShader(shader);
+            mShaderLoader.unload(shader);
         }
     }
 }

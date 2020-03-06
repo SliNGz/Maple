@@ -23,7 +23,7 @@ public class ByteBufferUtils {
                           .flip();
     }
 
-    public static ByteBuffer merge(int capacity, ByteBuffer ... byteBuffers) {
+    public static ByteBuffer merge(int capacity, ByteBuffer... byteBuffers) {
         ByteBuffer result = BufferUtils.createByteBuffer(capacity);
         for (ByteBuffer byteBuffer : byteBuffers) {
             result.put(byteBuffer);
@@ -33,7 +33,7 @@ public class ByteBufferUtils {
         return result;
     }
 
-    public static ByteBuffer merge(ByteBuffer ... byteBuffers) {
+    public static ByteBuffer merge(ByteBuffer... byteBuffers) {
         int capacity = 0;
         for (ByteBuffer byteBuffer : byteBuffers) {
             capacity += byteBuffer.remaining();
