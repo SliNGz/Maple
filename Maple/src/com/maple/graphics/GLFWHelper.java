@@ -128,4 +128,8 @@ public class GLFWHelper {
     public static void freeCallbacks(Window window) {
         glfwFreeCallbacks(window.getHandle());
     }
+
+    public static void setSwapInterval(int interval) {
+        glfwSwapInterval(interval);
+    }
 }

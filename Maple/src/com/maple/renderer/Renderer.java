@@ -11,20 +11,91 @@ import com.maple.graphics.shader.binder.ShaderBinder;
 import com.maple.graphics.shader.exceptions.NoBoundShaderException;
 import com.maple.graphics.shader.uniform.ShaderUniformController;
 import com.maple.log.Logger;
-import com.maple.renderer.camera.CameraStub;
 import com.maple.renderer.camera.ICamera;
+import com.maple.renderer.cull.CullingController;
+import com.maple.renderer.mesh.Mesh;
+import com.maple.utils.Color;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
+    private DepthTestController mDepthTestController;
+    private CullingController mCullingController;
+    private RendererBufferClearer mBufferClearer;
     private ShaderBinder mShaderBinder;
     private BufferBinder mBufferBinder;
     private ICamera mCamera;
 
-    public Renderer(ShaderBinder shaderBinder, BufferBinder bufferBinder) {
+    public Renderer(DepthTestController depthTestController, CullingController cullingController,
+                    RendererBufferClearer bufferClearer,
+                    ShaderBinder shaderBinder, BufferBinder bufferBinder,
+                    ICamera camera) {
+        mDepthTestController = depthTestController;
+        mCullingController = cullingController;
+        mBufferClearer = bufferClearer;
         mShaderBinder = shaderBinder;
         mBufferBinder = bufferBinder;
-        mCamera = new CameraStub();
+        mCamera = camera;
+    }
+
+    public void render() {
+        try {
+            VertexArray vertexArray = mBufferBinder.getBoundVertexArray();
+
+            try {
+                IndexBuffer indexBuffer = mBufferBinder.getBoundIndexBuffer();
+                glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), indexBuffer.getType(), 0);
+            } catch (NoBoundIndexBufferException e) {
+                glDrawArrays(GL_TRIANGLES, 0, vertexArray.getVerticesCount());
+            }
+        } catch (NoBoundVertexArrayException e) {
+            Logger.warnCore("RENDERING_FAILED_NO_BOUND_VERTEX_ARRAY");
+        }
+    }
+
+    public DepthTestController getDepthTestController() {
+        return mDepthTestController;
+    }
+
+    public CullingController getCullingController() {
+        return mCullingController;
+    }
+
+    public ShaderBinder getShaderBinder() {
+        return mShaderBinder;
+    }
+
+    public void enableClearColorBuffer() {
+        mBufferClearer.enableColorBufferBit();
+    }
+
+    public void disableClearColorBuffer() {
+        mBufferClearer.disableColorBufferBit();
+    }
+
+    public void enableClearDepthBuffer() {
+        mBufferClearer.enableDepthBufferBit();
+    }
+
+    public void disableClearDepthBuffer() {
+        mBufferClearer.disableColorBufferBit();
+    }
+
+    public void setClearColor(Color color) {
+        mBufferClearer.setColor(color);
+    }
+
+    public void clear() {
+        mBufferClearer.clear();
+    }
+
+    public void clear(Color color) {
+        mBufferClearer.clear(color);
+    }
+
+    private void updateViewProjectionUniform(Shader shader) {
+        ShaderUniformController shaderUniformController = shader.getUniformController();
+        shaderUniformController.setMatrix4f(Shader.MVP_UNIFORM_NAME, mCamera.getViewProjectionMatrix());
     }
 
     public void bindShader(Shader shader) {
@@ -54,6 +125,16 @@ public class Renderer {
         mBufferBinder.unbindIndexBuffer();
     }
 
+    public void bindMesh(Mesh mesh) {
+        bindVertexArray(mesh.getVertexArray());
+        bindIndexBuffer(mesh.getIndexBuffer());
+    }
+
+    public void unbindMesh() {
+        unbindVertexArray();
+        unbindIndexBuffer();
+    }
+
     public ICamera getCamera() {
         return mCamera;
     }
@@ -63,26 +144,6 @@ public class Renderer {
         try {
             updateViewProjectionUniform(mShaderBinder.getBoundShader(ShaderType.VERTEX_SHADER));
         } catch (NoBoundShaderException ignored) {
-        }
-    }
-
-    private void updateViewProjectionUniform(Shader shader) {
-        ShaderUniformController shaderUniformController = shader.getUniformController();
-        shaderUniformController.setMatrix4f(Shader.MVP_UNIFORM_NAME, mCamera.getViewProjectionMatrix());
-    }
-
-    public void render() {
-        try {
-            VertexArray vertexArray = mBufferBinder.getBoundVertexArray();
-
-            try {
-                IndexBuffer indexBuffer = mBufferBinder.getBoundIndexBuffer();
-                glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), indexBuffer.getType(), 0);
-            } catch (NoBoundIndexBufferException e) {
-                glDrawArrays(GL_TRIANGLES, 0, vertexArray.getCount());
-            }
-        } catch (NoBoundVertexArrayException e) {
-            Logger.warnCore("RENDERING_FAILED_NO_BOUND_VERTEX_ARRAY");
         }
     }
 }

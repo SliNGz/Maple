@@ -36,7 +36,7 @@ public class IndexBufferCreator {
         return create(indicesByteBuffer, usage, GL_UNSIGNED_INT);
     }
 
-    private IndexBuffer create(ByteBuffer indices, int usage, int type) {
+    public IndexBuffer create(ByteBuffer indices, int usage, int type) {
         int indexBuffer = glGenBuffers();
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);

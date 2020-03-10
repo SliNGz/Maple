@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 public class VertexPositionColorList extends VertexList<VertexPositionColor> {
     private static final VertexFormat sVertexFormat = new VertexFormat(
             new VertexFormatElementFloat(3),
-            new VertexFormatElementByte(4, false, false)
+            new VertexFormatElementByte(4, false, true)
     );
 
     @Override
