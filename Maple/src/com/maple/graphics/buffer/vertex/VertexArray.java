@@ -3,12 +3,12 @@ package com.maple.graphics.buffer.vertex;
 public class VertexArray {
     private int mHandle;
     private int mVertexBufferHandle;
-    private int mCount;
+    private int mVerticesCount;
 
-    public VertexArray(int handle, int vertexBufferHandle, int count) {
+    public VertexArray(int handle, int vertexBufferHandle, int verticesCount) {
         mHandle = handle;
         mVertexBufferHandle = vertexBufferHandle;
-        mCount = count;
+        mVerticesCount = verticesCount;
     }
 
     public int getHandle() {
@@ -19,7 +19,7 @@ public class VertexArray {
         return mVertexBufferHandle;
     }
 
-    public int getCount() {
-        return mCount;
+    public int getVerticesCount() {
+        return mVerticesCount;
     }
 }

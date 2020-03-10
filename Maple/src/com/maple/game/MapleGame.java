@@ -4,7 +4,6 @@ import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.GLFWHelper;
 import com.maple.graphics.GraphicsManager;
-import com.maple.graphics.buffer.BufferBinder;
 import com.maple.graphics.buffer.index.IndexBufferCreator;
 import com.maple.graphics.buffer.vertex.VertexArrayCreator;
 import com.maple.graphics.buffer.vertex.format.VertexFormatBinder;
@@ -15,7 +14,6 @@ import com.maple.graphics.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.shader.ShaderCreator;
 import com.maple.graphics.shader.ShaderLoader;
-import com.maple.graphics.shader.binder.ShaderBinder;
 import com.maple.graphics.shader.binder.ShaderBinderCreator;
 import com.maple.graphics.shader.manager.ShaderManager;
 import com.maple.graphics.window.Window;
@@ -28,6 +26,7 @@ import com.maple.input.mouse.MousePositionCallbackDispatcher;
 import com.maple.log.Logger;
 import com.maple.math.Vector2f;
 import com.maple.renderer.Renderer;
+import com.maple.renderer.RendererCreator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -40,8 +39,7 @@ public class MapleGame implements IGame {
     private final GameProperties mGameProperties;
 
     private Window mWindow;
-    private ShaderBinderCreator mShaderBinderCreator;
-    private ShaderBinder mShaderBinder;
+    private RendererCreator mRendererCreator;
     private Renderer mRenderer;
     private GraphicsManager mGraphicsManager;
 
@@ -95,8 +93,8 @@ public class MapleGame implements IGame {
     public void cleanup() {
         mGame.cleanup();
 
-        mShaderBinderCreator.destroy(mShaderBinder);
-        mShaderManager.cleanup();
+        cleanRenderer();
+        cleanShaderManager();
 
         GLFWHelper.freeCallbacks(mWindow);
         GLFWHelper.destroyWindow(mWindow);
@@ -136,6 +134,7 @@ public class MapleGame implements IGame {
 
             GLFWHelper.makeContextCurrent(mWindow);
             GLFWHelper.showWindow(mWindow);
+            GLFWHelper.setSwapInterval(0);
 
             Logger.infoCore("WINDOW_CREATED");
         } catch (MonitorRetrievalFailedException e) {
@@ -180,13 +179,18 @@ public class MapleGame implements IGame {
         mShaderManager = new ShaderManager(shaderLoader);
     }
 
+    private void cleanShaderManager() {
+        mShaderManager.cleanup();
+    }
+
     private void initializeRenderer() {
-        mShaderBinderCreator = new ShaderBinderCreator();
-        mShaderBinder = mShaderBinderCreator.create();
+        ShaderBinderCreator shaderBinderCreator = new ShaderBinderCreator();
+        mRendererCreator = new RendererCreator(shaderBinderCreator);
+        mRenderer = mRendererCreator.create();
+    }
 
-        BufferBinder bufferBinder = new BufferBinder();
-
-        mRenderer = new Renderer(mShaderBinder, bufferBinder);
+    private void cleanRenderer() {
+        mRendererCreator.destroy(mRenderer);
     }
 
     private void initializeGraphicsManager() {
