@@ -6,6 +6,7 @@ import com.maple.graphics.GLFWHelper;
 import com.maple.graphics.GraphicsManager;
 import com.maple.graphics.buffer.index.IndexBufferCreator;
 import com.maple.graphics.buffer.vertex.VertexArrayCreator;
+import com.maple.graphics.buffer.vertex.VertexBufferCreator;
 import com.maple.graphics.buffer.vertex.format.VertexFormatBinder;
 import com.maple.graphics.exceptions.GLFWInitializationFailedException;
 import com.maple.graphics.exceptions.MonitorRetrievalFailedException;
@@ -27,6 +28,9 @@ import com.maple.log.Logger;
 import com.maple.math.Vector2f;
 import com.maple.renderer.Renderer;
 import com.maple.renderer.RendererCreator;
+import com.maple.renderer.mesh.terrain.TerrainIndicesBufferCreator;
+import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
+import com.maple.renderer.mesh.terrain.TerrainPositionBufferCreator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -194,9 +198,22 @@ public class MapleGame implements IGame {
     }
 
     private void initializeGraphicsManager() {
+        VertexFormatBinder vertexFormatBinder = new VertexFormatBinder();
+        VertexBufferCreator vertexBufferCreator = new VertexBufferCreator();
+        VertexArrayCreator vertexArrayCreator = new VertexArrayCreator(vertexFormatBinder, vertexBufferCreator);
+        IndexBufferCreator indexBufferCreator = new IndexBufferCreator();
+
+        TerrainPositionBufferCreator positionBufferCreator = new TerrainPositionBufferCreator(vertexBufferCreator);
+        TerrainIndicesBufferCreator terrainIndicesBufferCreator = new TerrainIndicesBufferCreator(indexBufferCreator);
+        TerrainMeshCreator terrainMeshCreator = new TerrainMeshCreator(vertexArrayCreator,
+                                                                       positionBufferCreator,
+                                                                       terrainIndicesBufferCreator);
+
         mGraphicsManager = new GraphicsManager(mWindow,
-                                               new VertexArrayCreator(new VertexFormatBinder()),
-                                               new IndexBufferCreator(),
-                                               mRenderer);
+                                               vertexArrayCreator,
+                                               vertexBufferCreator,
+                                               indexBufferCreator,
+                                               mRenderer,
+                                               terrainMeshCreator);
     }
 }

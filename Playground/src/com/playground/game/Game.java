@@ -5,6 +5,8 @@ import com.maple.game.IGame;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.GraphicsManager;
+import com.maple.graphics.buffer.vertex.VertexBuffer;
+import com.maple.graphics.buffer.vertex.VertexBufferCreator;
 import com.maple.graphics.shader.Shader;
 import com.maple.graphics.shader.ShaderType;
 import com.maple.graphics.shader.exceptions.ShaderLoadFailedException;
@@ -19,10 +21,12 @@ import com.maple.math.MathHelper;
 import com.maple.math.Vector3f;
 import com.maple.renderer.Renderer;
 import com.maple.renderer.camera.PerspectiveCamera;
+import com.maple.renderer.camera.PerspectiveCameraController;
 import com.maple.renderer.mesh.Mesh;
-import com.maple.renderer.mesh.TerrainMeshCreator;
+import com.maple.renderer.mesh.terrain.ITerrainColorizer;
+import com.maple.renderer.mesh.terrain.TerrainColorBufferCreator;
+import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.utils.Color;
-import com.maple.utils.PerspectiveCameraController;
 import com.maple.world.terrain.Terrain;
 import com.maple.world.terrain.TerrainCreator;
 import com.maple.world.terrain.heightmap.DefaultHeightMapGeneratorBuilder;
@@ -122,9 +126,16 @@ public class Game implements IGame {
 
         TerrainCreator terrainCreator = new TerrainCreator(new DefaultHeightMapGeneratorBuilder().build());
         Terrain terrain = terrainCreator.create(256, 256);
-        TerrainMeshCreator terrainMeshCreator = new TerrainMeshCreator(mGraphicsManager.getVertexArrayCreator(),
-                                                                       mGraphicsManager.getIndexBufferCreator());
-        mTerrainMesh = terrainMeshCreator.create(terrain);
+
+        TerrainMeshCreator terrainMeshCreator = mGraphicsManager.getTerrainMeshCreator();
+
+        VertexBufferCreator vertexBufferCreator = mGraphicsManager.getVertexBufferCreator();
+        ITerrainColorizer terrainColorizer = (x, y, z) -> new Color(x, (int) y, z);
+        TerrainColorBufferCreator terrainColorBufferCreator = new TerrainColorBufferCreator(vertexBufferCreator,
+                                                                                            terrainColorizer);
+        VertexBuffer colorBuffer = terrainColorBufferCreator.create(terrain);
+
+        mTerrainMesh = terrainMeshCreator.create(terrain, colorBuffer);
     }
 
     @Override

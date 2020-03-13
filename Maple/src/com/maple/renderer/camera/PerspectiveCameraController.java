@@ -1,8 +1,7 @@
-package com.maple.utils;
+package com.maple.renderer.camera;
 
 import com.maple.input.mouse.IMousePositionCallback;
 import com.maple.math.Vector3f;
-import com.maple.renderer.camera.PerspectiveCamera;
 
 public class PerspectiveCameraController implements IMousePositionCallback {
     private static final float SENSITIVITY_MULTIPLIER = 0.01F;

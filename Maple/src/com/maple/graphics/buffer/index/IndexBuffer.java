@@ -1,11 +1,13 @@
 package com.maple.graphics.buffer.index;
 
+import com.maple.graphics.OpenGLType;
+
 public class IndexBuffer {
     private int mHandle;
-    private int mType;
+    private OpenGLType mType;
     private int mCount;
 
-    public IndexBuffer(int handle, int type, int count) {
+    public IndexBuffer(int handle, OpenGLType type, int count) {
         mHandle = handle;
         mType = type;
         mCount = count;
@@ -15,7 +17,7 @@ public class IndexBuffer {
         return mHandle;
     }
 
-    public int getType() {
+    public OpenGLType getType() {
         return mType;
     }
 

@@ -1,14 +1,14 @@
 package com.maple.graphics.buffer.vertex.format.element;
 
+import com.maple.graphics.OpenGLType;
+
 public abstract class VertexFormatElementFloatingPoint implements IVertexFormatElement {
     private int mCount;
-    private int mType;
-    private int mTypeSize;
+    private OpenGLType mType;
 
-    public VertexFormatElementFloatingPoint(int count, int type, int typeSize) {
+    public VertexFormatElementFloatingPoint(int count, OpenGLType type) {
         mCount = count;
         mType = type;
-        mTypeSize = typeSize;
     }
 
     @Override
@@ -17,13 +17,8 @@ public abstract class VertexFormatElementFloatingPoint implements IVertexFormatE
     }
 
     @Override
-    public int getType() {
+    public OpenGLType getType() {
         return mType;
-    }
-
-    @Override
-    public int getTypeSize() {
-        return mTypeSize;
     }
 
     @Override
