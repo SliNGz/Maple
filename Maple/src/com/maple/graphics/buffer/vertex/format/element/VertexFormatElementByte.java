@@ -1,10 +1,9 @@
 package com.maple.graphics.buffer.vertex.format.element;
 
-import static org.lwjgl.opengl.GL11.GL_BYTE;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
+import com.maple.graphics.OpenGLType;
 
 public class VertexFormatElementByte extends VertexFormatElementInteger {
     public VertexFormatElementByte(int count, boolean signed, boolean normalized) {
-        super(count, signed, GL_BYTE, GL_UNSIGNED_BYTE, Byte.BYTES, normalized);
+        super(count, signed, OpenGLType.BYTE, OpenGLType.UNSIGNED_BYTE, normalized);
     }
 }

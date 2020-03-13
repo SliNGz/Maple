@@ -1,21 +1,21 @@
 package com.maple.graphics.buffer.vertex.format.element;
 
+import com.maple.graphics.OpenGLType;
+
 public abstract class VertexFormatElementInteger implements IVertexFormatElement {
     private int mCount;
     private boolean mSigned;
-    private int mSignedType;
-    private int mUnsignedType;
-    private int mTypeSize;
+    private OpenGLType mSignedType;
+    private OpenGLType mUnsignedType;
     private boolean mNormalized;
 
     public VertexFormatElementInteger(int count,
-                                      boolean signed, int signedType, int unsignedType, int typeSize,
+                                      boolean signed, OpenGLType signedType, OpenGLType unsignedType,
                                       boolean normalized) {
         mCount = count;
         mSigned = signed;
         mSignedType = signedType;
         mUnsignedType = unsignedType;
-        mTypeSize = typeSize;
         mNormalized = normalized;
     }
 
@@ -25,13 +25,8 @@ public abstract class VertexFormatElementInteger implements IVertexFormatElement
     }
 
     @Override
-    public int getType() {
+    public OpenGLType getType() {
         return mSigned ? mSignedType : mUnsignedType;
-    }
-
-    @Override
-    public int getTypeSize() {
-        return mTypeSize;
     }
 
     @Override

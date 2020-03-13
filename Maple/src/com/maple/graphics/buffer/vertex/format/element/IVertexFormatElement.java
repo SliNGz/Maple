@@ -1,15 +1,16 @@
 package com.maple.graphics.buffer.vertex.format.element;
 
+import com.maple.graphics.OpenGLType;
+
 public interface IVertexFormatElement {
     int getCount();
 
-    int getType();
-
-    int getTypeSize();
+    OpenGLType getType();
 
     boolean isNormalized();
 
     default int getSize() {
-        return getTypeSize() * getCount();
+        OpenGLType type = getType();
+        return type.getSize() * getCount();
     }
 }

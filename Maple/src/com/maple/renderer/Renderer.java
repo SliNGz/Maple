@@ -1,5 +1,6 @@
 package com.maple.renderer;
 
+import com.maple.graphics.OpenGLType;
 import com.maple.graphics.buffer.BufferBinder;
 import com.maple.graphics.buffer.exceptions.NoBoundIndexBufferException;
 import com.maple.graphics.buffer.exceptions.NoBoundVertexArrayException;
@@ -44,7 +45,8 @@ public class Renderer {
 
             try {
                 IndexBuffer indexBuffer = mBufferBinder.getBoundIndexBuffer();
-                glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), indexBuffer.getType(), 0);
+                OpenGLType indexBufferType = indexBuffer.getType();
+                glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), indexBufferType.getValue(), 0);
             } catch (NoBoundIndexBufferException e) {
                 glDrawArrays(GL_TRIANGLES, 0, vertexArray.getVerticesCount());
             }
