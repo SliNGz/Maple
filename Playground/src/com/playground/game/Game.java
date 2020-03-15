@@ -44,6 +44,9 @@ public class Game implements IGame {
     private Shader mVertexShader;
     private Shader mFragmentShader;
 
+    private PerspectiveCamera mPerspectiveCamera;
+
+    private Terrain mTerrain;
     private Mesh mTerrainMesh;
 
     public Game(GameContext context) {
@@ -66,17 +69,17 @@ public class Game implements IGame {
             throw new OperationFailedException(e);
         }
 
-        PerspectiveCamera perspectiveCamera = new PerspectiveCamera(45, mWindow.getAspectRatio(), 0.01F, 1000);
-        perspectiveCamera.setPosition(new Vector3f(0, 80, 0));
-        mMousePositionCallbackDispatcher.addDisabledCursorCallback(new PerspectiveCameraController(perspectiveCamera, 0.5F));
-        mRenderer.setCamera(perspectiveCamera);
+        mPerspectiveCamera = new PerspectiveCamera(45, mWindow.getAspectRatio(), 0.01F, 1000);
+        mPerspectiveCamera.setPosition(new Vector3f(0, 80, 0));
+        mMousePositionCallbackDispatcher.addDisabledCursorCallback(new PerspectiveCameraController(mPerspectiveCamera, 0.5F));
+        mRenderer.setCamera(mPerspectiveCamera);
 
         mKeymap.add(new Key(GLFW_KEY_W), new IKeyAction() {
             @Override
             public void onKeyDown() {
-                Vector3f vector3f = Vector3f.createLookAt(perspectiveCamera.getRotation().X, perspectiveCamera.getRotation().Y);
+                Vector3f vector3f = Vector3f.createLookAt(mPerspectiveCamera.getRotation().X, mPerspectiveCamera.getRotation().Y);
                 vector3f.normalize();
-                perspectiveCamera.addPosition(vector3f);
+                mPerspectiveCamera.addPosition(vector3f);
             }
 
             @Override
@@ -87,9 +90,9 @@ public class Game implements IGame {
             @Override
             public void onKeyDown() {
                 Vector3f vector3f = Vector3f.createLookAt(0,
-                                                          perspectiveCamera.getRotation().Y - MathHelper.PI / 2);
+                                                          mPerspectiveCamera.getRotation().Y - MathHelper.PI / 2);
                 vector3f.normalize();
-                perspectiveCamera.addPosition(vector3f);
+                mPerspectiveCamera.addPosition(vector3f);
             }
 
             @Override
@@ -99,11 +102,11 @@ public class Game implements IGame {
         mKeymap.add(new Key(GLFW_KEY_S), new IKeyAction() {
             @Override
             public void onKeyDown() {
-                Vector3f vector3f = Vector3f.createLookAt(perspectiveCamera.getRotation().X,
-                                                          perspectiveCamera.getRotation().Y);
+                Vector3f vector3f = Vector3f.createLookAt(mPerspectiveCamera.getRotation().X,
+                                                          mPerspectiveCamera.getRotation().Y);
                 vector3f.negate();
                 vector3f.normalize();
-                perspectiveCamera.addPosition(vector3f);
+                mPerspectiveCamera.addPosition(vector3f);
             }
 
             @Override
@@ -114,9 +117,9 @@ public class Game implements IGame {
             @Override
             public void onKeyDown() {
                 Vector3f vector3f = Vector3f.createLookAt(0,
-                                                          perspectiveCamera.getRotation().Y + MathHelper.PI / 2);
+                                                          mPerspectiveCamera.getRotation().Y + MathHelper.PI / 2);
                 vector3f.normalize();
-                perspectiveCamera.addPosition(vector3f);
+                mPerspectiveCamera.addPosition(vector3f);
             }
 
             @Override
@@ -125,21 +128,24 @@ public class Game implements IGame {
         });
 
         TerrainCreator terrainCreator = new TerrainCreator(new DefaultHeightMapGeneratorBuilder().build());
-        Terrain terrain = terrainCreator.create(256, 256);
-
+        mTerrain = terrainCreator.create(256, 256);
         TerrainMeshCreator terrainMeshCreator = mGraphicsManager.getTerrainMeshCreator();
+        mTerrainMesh = terrainMeshCreator.create(mTerrain);
 
         VertexBufferCreator vertexBufferCreator = mGraphicsManager.getVertexBufferCreator();
         ITerrainColorizer terrainColorizer = (x, y, z) -> new Color(x, (int) y, z);
         TerrainColorBufferCreator terrainColorBufferCreator = new TerrainColorBufferCreator(vertexBufferCreator,
                                                                                             terrainColorizer);
-        VertexBuffer colorBuffer = terrainColorBufferCreator.create(terrain);
+        VertexBuffer colorBuffer = terrainColorBufferCreator.create(mTerrain);
 
-        mTerrainMesh = terrainMeshCreator.create(terrain, colorBuffer);
+        mTerrainMesh = terrainMeshCreator.create(mTerrain, colorBuffer);
     }
 
     @Override
     public void update(GameTime gameTime) {
+        float y = mTerrain.get(mPerspectiveCamera.getPosition().X, mPerspectiveCamera.getPosition().Z);
+        y += 1.8;
+        mPerspectiveCamera.setPosition(new Vector3f(mPerspectiveCamera.getPosition().X, y, mPerspectiveCamera.getPosition().Z));
     }
 
     @Override

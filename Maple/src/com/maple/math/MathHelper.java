@@ -43,4 +43,13 @@ public class MathHelper {
     public static float lerp(float startValue, float endValue, float amount) {
         return startValue + (endValue - startValue) * amount;
     }
+
+    public static float barryCentric(Vector3f p1, Vector3f p2, Vector3f p3, float x, float z) {
+        float det = (p2.Z - p3.Z) * (p1.X - p3.X) + (p3.X - p2.X) * (p1.Z - p3.Z);
+        float l1 = ((p2.Z - p3.Z) * (x - p3.X) + (p3.X - p2.X) * (z - p3.Z)) / det;
+        float l2 = ((p3.Z - p1.Z) * (x - p3.X) + (p1.X - p3.X) * (z - p3.Z)) / det;
+        float l3 = 1.0f - l1 - l2;
+
+        return l1 * p1.Y + l2 * p2.Y + l3 * p3.Y;
+    }
 }
