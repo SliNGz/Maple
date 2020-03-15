@@ -13,6 +13,10 @@ public class Terrain {
         return mHeightMap.get(x, z);
     }
 
+    public float get(float x, float z) {
+        return TerrainHeightCalculator.calculate(this, x, z);
+    }
+
     public void set(int x, int z, float height) {
         mHeightMap.set(x, z, height);
     }
