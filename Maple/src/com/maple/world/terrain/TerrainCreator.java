@@ -11,6 +11,9 @@ public class TerrainCreator {
     }
 
     public Terrain create(int width, int length) {
+        width += 1;
+        length += 1;
+
         Flat2DArray<Float> heightMap = new Flat2DArray<>(width, length);
 
         for (int x = 0; x < width; ++x) {

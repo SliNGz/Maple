@@ -1,28 +1,25 @@
 package com.maple.renderer;
 
 import com.maple.graphics.buffer.BufferBinder;
-import com.maple.graphics.shader.binder.ShaderBinder;
-import com.maple.graphics.shader.binder.ShaderBinderCreator;
-import com.maple.renderer.camera.CameraStub;
-import com.maple.renderer.camera.ICamera;
 import com.maple.renderer.cull.CullingController;
 import com.maple.renderer.cull.CullingFace;
 import com.maple.renderer.cull.CullingMode;
+import com.maple.renderer.options.RenderOptionsBinder;
+import com.maple.renderer.options.RenderOptionsBinderCreator;
 
 public class RendererCreator {
-    private ShaderBinderCreator mShaderBinderCreator;
+    private RenderOptionsBinderCreator mRenderOptionsBinderCreator;
 
-    public RendererCreator(ShaderBinderCreator shaderBinderCreator) {
-        mShaderBinderCreator = shaderBinderCreator;
+    public RendererCreator(RenderOptionsBinderCreator renderOptionsBinderCreator) {
+        mRenderOptionsBinderCreator = renderOptionsBinderCreator;
     }
 
     public Renderer create() {
         DepthTestController depthTestController = new DepthTestController();
         CullingController cullingController = new CullingController();
         RendererBufferClearer bufferClearer = new RendererBufferClearer();
-        ShaderBinder shaderBinder = mShaderBinderCreator.create();
         BufferBinder bufferBinder = new BufferBinder();
-        ICamera camera = new CameraStub();
+        RenderOptionsBinder renderOptionsBinder = mRenderOptionsBinderCreator.create();
 
         depthTestController.enable();
         cullingController.enable();
@@ -32,10 +29,10 @@ public class RendererCreator {
         bufferClearer.enableColorBufferBit();
         bufferClearer.enableDepthBufferBit();
 
-        return new Renderer(depthTestController, cullingController, bufferClearer, shaderBinder, bufferBinder, camera);
+        return new Renderer(depthTestController, cullingController, bufferClearer, bufferBinder, renderOptionsBinder);
     }
 
     public void destroy(Renderer renderer) {
-        mShaderBinderCreator.destroy(renderer.getShaderBinder());
+        mRenderOptionsBinderCreator.destroy(renderer.getRenderOptionsBinder());
     }
 }

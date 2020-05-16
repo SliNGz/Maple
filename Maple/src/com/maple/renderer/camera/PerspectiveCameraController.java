@@ -4,7 +4,7 @@ import com.maple.input.mouse.IMousePositionCallback;
 import com.maple.math.Vector3f;
 
 public class PerspectiveCameraController implements IMousePositionCallback {
-    private static final float SENSITIVITY_MULTIPLIER = 0.01F;
+    private static final float SENSITIVITY_MULTIPLIER = 0.0005F;
 
     private PerspectiveCamera mCamera;
     private float mSensitivity;

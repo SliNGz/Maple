@@ -1,8 +1,8 @@
 package com.maple.graphics.shader.manager;
 
-import com.maple.graphics.shader.Shader;
+import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.exceptions.ShaderLoadFailedException;
 
 public interface IShaderManager {
-    Shader load(String shaderPath) throws ShaderLoadFailedException;
+    IShader load(String shaderPath) throws ShaderLoadFailedException;
 }

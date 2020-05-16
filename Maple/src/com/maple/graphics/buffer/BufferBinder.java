@@ -19,23 +19,31 @@ public class BufferBinder {
     }
 
     public void bindVertexArray(VertexArray vertexArray) {
-        mVertexArray = vertexArray;
-        glBindVertexArray(vertexArray.getHandle());
+        if (mVertexArray != vertexArray) {
+            glBindVertexArray(vertexArray.getHandle());
+            mVertexArray = vertexArray;
+        }
     }
 
     public void unbindVertexArray() {
-        mVertexArray = null;
-        glBindVertexArray(0);
+        if (mVertexArray != null) {
+            glBindVertexArray(0);
+            mVertexArray = null;
+        }
     }
 
     public void bindIndexBuffer(IndexBuffer indexBuffer) {
-        mIndexBuffer = indexBuffer;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.getHandle());
+        if (mIndexBuffer != indexBuffer) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.getHandle());
+            mIndexBuffer = indexBuffer;
+        }
     }
 
     public void unbindIndexBuffer() {
-        mIndexBuffer = null;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        if (mIndexBuffer != null) {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            mIndexBuffer = null;
+        }
     }
 
     public VertexArray getBoundVertexArray() throws NoBoundVertexArrayException {

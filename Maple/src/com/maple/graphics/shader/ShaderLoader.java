@@ -13,13 +13,13 @@ public class ShaderLoader {
         mShaderCreator = shaderCreator;
     }
 
-    public Shader load(File shaderFile) throws ShaderLoadFailedException {
+    public IShader load(File shaderFile) throws ShaderLoadFailedException {
         try {
             ShaderType shaderType = getShaderType(shaderFile);
             String shaderSource = getShaderSource(shaderFile);
 
             return mShaderCreator.create(shaderType, shaderSource);
-        } catch (ShaderTypeResolutionFailedException | ShaderSourceRetrievalException | ShaderCreationFailedException e) {
+        } catch (ShaderTypeResolutionFailedException | ShaderSourceRetrievalFailedException | ShaderCreationFailedException e) {
             throw new ShaderLoadFailedException(e);
         }
     }
@@ -43,7 +43,7 @@ public class ShaderLoader {
         }
     }
 
-    private String getShaderSource(File shaderFile) throws ShaderSourceRetrievalException {
+    private String getShaderSource(File shaderFile) throws ShaderSourceRetrievalFailedException {
         StringBuilder stringBuilder = new StringBuilder();
 
         try (FileInputStream fileInputStream = new FileInputStream(shaderFile)) {
@@ -56,13 +56,13 @@ public class ShaderLoader {
                 stringBuilder.append('\n');
             }
         } catch (IOException e) {
-            throw new ShaderSourceRetrievalException(e);
+            throw new ShaderSourceRetrievalFailedException(e);
         }
 
         return stringBuilder.toString();
     }
 
-    public void unload(Shader shader) {
+    public void unload(IShader shader) {
         mShaderCreator.destroy(shader);
     }
 }
