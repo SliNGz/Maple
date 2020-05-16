@@ -13,20 +13,25 @@ import static org.lwjgl.opengl.GL41.*;
 public class ShaderCreator {
     private static final int SHADER_CREATION_ERROR = 0;
 
-    public Shader create(ShaderType shaderType, String shaderSource) throws ShaderCreationFailedException {
-        int shader = createShader(shaderType);
+    public IShader create(ShaderType shaderType, String shaderSource) throws ShaderCreationFailedException {
+        int nativeShader = createShader(shaderType);
 
         try {
-            glShaderSource(shader, shaderSource);
-            compileShader(shader);
-            ShaderProgram program = ShaderProgramCreator.create(shader);
+            glShaderSource(nativeShader, shaderSource);
+            compileShader(nativeShader);
+            ShaderProgram program = ShaderProgramCreator.create(nativeShader);
             ShaderUniformController uniformController = new ShaderUniformController(program);
 
-            return new Shader(shaderType, program, uniformController);
+            Shader shader = new Shader(shaderType, program, uniformController);
+            if (shaderType == ShaderType.VERTEX_SHADER) {
+                return new VertexShader(shader);
+            }
+
+            return shader;
         } catch (ShaderCompilationFailedException | ShaderProgramCreationFailedException e) {
             throw new ShaderCreationFailedException(e);
         } finally {
-            glDeleteShader(shader);
+            glDeleteShader(nativeShader);
         }
     }
 
@@ -58,7 +63,7 @@ public class ShaderCreator {
         }
     }
 
-    public void destroy(Shader shader) {
+    public void destroy(IShader shader) {
         ShaderProgram shaderProgram = shader.getProgram();
         glDeleteProgram(shaderProgram.getHandle());
     }

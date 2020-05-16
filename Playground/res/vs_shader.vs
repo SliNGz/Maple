@@ -10,9 +10,10 @@ out gl_PerVertex
 };
 
 uniform mat4 u_mvp;
+uniform mat4 u_transform;
 
 void main()
 {
-	gl_Position = u_mvp * in_position;
+	gl_Position = u_mvp * u_transform * in_position;
 	gl_Color = in_color;
 };

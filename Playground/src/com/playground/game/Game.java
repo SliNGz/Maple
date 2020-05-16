@@ -7,8 +7,8 @@ import com.maple.game.runner.GameTime;
 import com.maple.graphics.GraphicsManager;
 import com.maple.graphics.buffer.vertex.VertexBuffer;
 import com.maple.graphics.buffer.vertex.VertexBufferCreator;
-import com.maple.graphics.shader.Shader;
-import com.maple.graphics.shader.ShaderType;
+import com.maple.graphics.shader.IShader;
+import com.maple.graphics.shader.effect.Effect;
 import com.maple.graphics.shader.exceptions.ShaderLoadFailedException;
 import com.maple.graphics.shader.manager.IShaderManager;
 import com.maple.graphics.window.Window;
@@ -18,6 +18,7 @@ import com.maple.input.keyboard.map.IKeymap;
 import com.maple.input.mouse.IMousePositionCallbackDispatcher;
 import com.maple.log.Logger;
 import com.maple.math.MathHelper;
+import com.maple.math.Matrix4f;
 import com.maple.math.Vector3f;
 import com.maple.renderer.Renderer;
 import com.maple.renderer.camera.PerspectiveCamera;
@@ -26,6 +27,7 @@ import com.maple.renderer.mesh.Mesh;
 import com.maple.renderer.mesh.terrain.ITerrainColorizer;
 import com.maple.renderer.mesh.terrain.TerrainColorBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
+import com.maple.renderer.options.RenderOptions;
 import com.maple.utils.Color;
 import com.maple.world.terrain.Terrain;
 import com.maple.world.terrain.TerrainCreator;
@@ -41,8 +43,8 @@ public class Game implements IGame {
     private IShaderManager mShaderManager;
     private IMousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
 
-    private Shader mVertexShader;
-    private Shader mFragmentShader;
+    private IShader mVertexShader;
+    private IShader mFragmentShader;
 
     private PerspectiveCamera mPerspectiveCamera;
 
@@ -71,8 +73,7 @@ public class Game implements IGame {
 
         mPerspectiveCamera = new PerspectiveCamera(45, mWindow.getAspectRatio(), 0.01F, 1000);
         mPerspectiveCamera.setPosition(new Vector3f(0, 80, 0));
-        mMousePositionCallbackDispatcher.addDisabledCursorCallback(new PerspectiveCameraController(mPerspectiveCamera, 0.5F));
-        mRenderer.setCamera(mPerspectiveCamera);
+        mMousePositionCallbackDispatcher.addDisabledCursorCallback(new PerspectiveCameraController(mPerspectiveCamera, 2.5F));
 
         mKeymap.add(new Key(GLFW_KEY_W), new IKeyAction() {
             @Override
@@ -152,15 +153,18 @@ public class Game implements IGame {
     public void render(float alpha) {
         mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
 
-        mRenderer.bindShader(mVertexShader);
-        mRenderer.bindShader(mFragmentShader);
+        RenderOptions renderOptions = new RenderOptions();
+        renderOptions.setCamera(mPerspectiveCamera);
+        renderOptions.setEffect(new Effect(mVertexShader, mFragmentShader));
 
         mRenderer.bindMesh(mTerrainMesh);
-        mRenderer.render();
-        mRenderer.unbindMesh();
 
-        mRenderer.unbindShader(ShaderType.VERTEX_SHADER);
-        mRenderer.unbindShader(ShaderType.FRAGMENT_SHADER);
+        mRenderer.bindRenderOptions(renderOptions);
+        mRenderer.render();
+
+        renderOptions.setTransform(Matrix4f.createTranslation(new Vector3f(0, 0, 256)));
+        mRenderer.bindRenderOptions(renderOptions);
+        mRenderer.render();
     }
 
     @Override
