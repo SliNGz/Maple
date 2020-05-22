@@ -31,7 +31,6 @@ import com.maple.renderer.RendererCreator;
 import com.maple.renderer.mesh.terrain.TerrainIndicesBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.renderer.mesh.terrain.TerrainPositionBufferCreator;
-import com.maple.renderer.options.RenderOptionsBinderCreator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -190,8 +189,7 @@ public class MapleGame implements IGame {
 
     private void initializeRenderer() {
         ShaderBinderCreator shaderBinderCreator = new ShaderBinderCreator();
-        RenderOptionsBinderCreator renderOptionsBinderCreator = new RenderOptionsBinderCreator(shaderBinderCreator);
-        mRendererCreator = new RendererCreator(renderOptionsBinderCreator);
+        mRendererCreator = new RendererCreator(shaderBinderCreator);
 
         mRenderer = mRendererCreator.create();
     }
