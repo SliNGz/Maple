@@ -1,38 +1,45 @@
 package com.maple.renderer;
 
 import com.maple.graphics.buffer.BufferBinder;
+import com.maple.graphics.shader.binder.ShaderBinder;
+import com.maple.graphics.shader.binder.ShaderBinderCreator;
+import com.maple.graphics.shader.effect.EffectBinder;
 import com.maple.renderer.cull.CullingController;
 import com.maple.renderer.cull.CullingFace;
 import com.maple.renderer.cull.CullingMode;
-import com.maple.renderer.options.RenderOptionsBinder;
-import com.maple.renderer.options.RenderOptionsBinderCreator;
 
 public class RendererCreator {
-    private RenderOptionsBinderCreator mRenderOptionsBinderCreator;
+    private ShaderBinderCreator mShaderBinderCreator;
 
-    public RendererCreator(RenderOptionsBinderCreator renderOptionsBinderCreator) {
-        mRenderOptionsBinderCreator = renderOptionsBinderCreator;
+    public RendererCreator(ShaderBinderCreator shaderBinderCreator) {
+        mShaderBinderCreator = shaderBinderCreator;
     }
 
     public Renderer create() {
         DepthTestController depthTestController = new DepthTestController();
         CullingController cullingController = new CullingController();
         RendererBufferClearer bufferClearer = new RendererBufferClearer();
+
+        ShaderBinderCreator shaderBinderCreator = new ShaderBinderCreator();
+        ShaderBinder shaderBinder = shaderBinderCreator.create();
+        EffectBinder effectBinder = new EffectBinder(shaderBinder);
+
         BufferBinder bufferBinder = new BufferBinder();
-        RenderOptionsBinder renderOptionsBinder = mRenderOptionsBinderCreator.create();
 
         depthTestController.enable();
         cullingController.enable();
-        cullingController.setFaceCulling(CullingFace.FRONT);
-        cullingController.setMode(CullingMode.CLOCKWISE);
+        cullingController.setFaceCulling(CullingFace.BACK);
+        cullingController.setMode(CullingMode.COUNTER_CLOCKWISE);
 
         bufferClearer.enableColorBufferBit();
         bufferClearer.enableDepthBufferBit();
 
-        return new Renderer(depthTestController, cullingController, bufferClearer, bufferBinder, renderOptionsBinder);
+        return new Renderer(depthTestController, cullingController, bufferClearer, effectBinder, bufferBinder);
     }
 
     public void destroy(Renderer renderer) {
-        mRenderOptionsBinderCreator.destroy(renderer.getRenderOptionsBinder());
+        EffectBinder effectBinder = renderer.getEffectBinder();
+        ShaderBinder shaderBinder = effectBinder.getShaderBinder();
+        mShaderBinderCreator.destroy(shaderBinder);
     }
 }

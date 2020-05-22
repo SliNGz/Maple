@@ -6,13 +6,14 @@ import com.maple.graphics.buffer.exceptions.NoBoundIndexBufferException;
 import com.maple.graphics.buffer.exceptions.NoBoundVertexArrayException;
 import com.maple.graphics.buffer.index.IndexBuffer;
 import com.maple.graphics.buffer.vertex.VertexArray;
+import com.maple.graphics.shader.VertexShader;
+import com.maple.graphics.shader.effect.Effect;
+import com.maple.graphics.shader.effect.EffectBinder;
 import com.maple.log.Logger;
+import com.maple.math.Matrix4f;
 import com.maple.renderer.cull.CullingController;
-import com.maple.renderer.exceptions.NoBoundRenderOptionsException;
 import com.maple.renderer.exceptions.RenderingFailedException;
 import com.maple.renderer.mesh.Mesh;
-import com.maple.renderer.options.RenderOptions;
-import com.maple.renderer.options.RenderOptionsBinder;
 import com.maple.utils.Color;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -21,17 +22,23 @@ public class Renderer {
     private DepthTestController mDepthTestController;
     private CullingController mCullingController;
     private RendererBufferClearer mBufferClearer;
+    private EffectBinder mEffectBinder;
     private BufferBinder mBufferBinder;
-    private RenderOptionsBinder mRenderOptionsBinder;
+
+    private Effect mEffect;
+    private Matrix4f mMVP;
 
     public Renderer(DepthTestController depthTestController, CullingController cullingController,
-                    RendererBufferClearer bufferClearer, BufferBinder bufferBinder,
-                    RenderOptionsBinder renderOptionsBinder) {
+                    RendererBufferClearer bufferClearer, EffectBinder effectBinder,
+                    BufferBinder bufferBinder) {
         mDepthTestController = depthTestController;
         mCullingController = cullingController;
         mBufferClearer = bufferClearer;
+        mEffectBinder = effectBinder;
         mBufferBinder = bufferBinder;
-        mRenderOptionsBinder = renderOptionsBinder;
+
+        mEffect = new Effect();
+        mMVP = Matrix4f.createIdentity();
     }
 
     public DepthTestController getDepthTestController() {
@@ -42,8 +49,8 @@ public class Renderer {
         return mCullingController;
     }
 
-    public RenderOptionsBinder getRenderOptionsBinder() {
-        return mRenderOptionsBinder;
+    public EffectBinder getEffectBinder() {
+        return mEffectBinder;
     }
 
     public void enableClearColorBuffer() {
@@ -74,6 +81,14 @@ public class Renderer {
         mBufferClearer.clear(color);
     }
 
+    public void setEffect(Effect effect) {
+        mEffect = effect;
+    }
+
+    public void setMVP(Matrix4f mvp) {
+        mMVP = mvp;
+    }
+
     public void bindVertexArray(VertexArray vertexArray) {
         mBufferBinder.bindVertexArray(vertexArray);
     }
@@ -100,21 +115,12 @@ public class Renderer {
         mBufferBinder.unbindIndexBuffer();
     }
 
-    public void bindRenderOptions(RenderOptions renderOptions) {
-        mRenderOptionsBinder.bind(renderOptions);
-    }
-
-    public void unbindRenderOptions() {
-        mRenderOptionsBinder.unbind();
-    }
-
     public void render() {
         try {
             try {
-                if (!mRenderOptionsBinder.renderOptionsBound()) {
-                    Logger.errorCore("RENDERING_FAILED_NO_BOUND_RENDER_OPTIONS");
-                    throw new NoBoundRenderOptionsException();
-                }
+                mEffectBinder.bind(mEffect);
+                VertexShader vertexShader = mEffect.getVertexShader();
+                vertexShader.setMVP(mMVP);
 
                 VertexArray vertexArray = mBufferBinder.getBoundVertexArray();
                 try {

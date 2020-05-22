@@ -10,12 +10,10 @@ public class VertexShader implements IShader {
     private Shader mShader;
 
     private Matrix4f mMVP;
-    private Matrix4f mTransform;
 
     public VertexShader(Shader shader) {
         mShader = shader;
         mMVP = null;
-        mTransform = null;
     }
 
     @Override
@@ -52,13 +50,6 @@ public class VertexShader implements IShader {
         if (!mvp.equals(mMVP)) {
             setMatrix4f(MVP_UNIFORM_NAME, mvp);
             mMVP = new Matrix4f(mvp);
-        }
-    }
-
-    public void setTransform(Matrix4f transform) {
-        if (!transform.equals(mTransform)) {
-            setMatrix4f(TRANSFORM_UNIFORM_NAME, transform);
-            mTransform = new Matrix4f(transform);
         }
     }
 }

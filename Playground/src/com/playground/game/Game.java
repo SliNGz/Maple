@@ -27,7 +27,6 @@ import com.maple.renderer.mesh.Mesh;
 import com.maple.renderer.mesh.terrain.ITerrainColorizer;
 import com.maple.renderer.mesh.terrain.TerrainColorBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
-import com.maple.renderer.options.RenderOptions;
 import com.maple.utils.Color;
 import com.maple.world.terrain.Terrain;
 import com.maple.world.terrain.TerrainCreator;
@@ -45,6 +44,7 @@ public class Game implements IGame {
 
     private IShader mVertexShader;
     private IShader mFragmentShader;
+    private Effect mEffect;
 
     private PerspectiveCamera mPerspectiveCamera;
 
@@ -70,6 +70,8 @@ public class Game implements IGame {
         } catch (ShaderLoadFailedException e) {
             throw new OperationFailedException(e);
         }
+
+        mEffect = new Effect(mVertexShader, mFragmentShader);
 
         mPerspectiveCamera = new PerspectiveCamera(45, mWindow.getAspectRatio(), 0.01F, 1000);
         mPerspectiveCamera.setPosition(new Vector3f(0, 80, 0));
@@ -140,6 +142,9 @@ public class Game implements IGame {
         VertexBuffer colorBuffer = terrainColorBufferCreator.create(mTerrain);
 
         mTerrainMesh = terrainMeshCreator.create(mTerrain, colorBuffer);
+
+        mRenderer.setEffect(mEffect);
+        mRenderer.bindMesh(mTerrainMesh);
     }
 
     @Override
@@ -153,18 +158,11 @@ public class Game implements IGame {
     public void render(float alpha) {
         mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
 
-        RenderOptions renderOptions = new RenderOptions();
-        renderOptions.setCamera(mPerspectiveCamera);
-        renderOptions.setEffect(new Effect(mVertexShader, mFragmentShader));
-
-        mRenderer.bindMesh(mTerrainMesh);
-
-        mRenderer.bindRenderOptions(renderOptions);
-        mRenderer.render();
-
-        renderOptions.setTransform(Matrix4f.createTranslation(new Vector3f(0, 0, 256)));
-        mRenderer.bindRenderOptions(renderOptions);
-        mRenderer.render();
+        for (int i = 0; i < 2; ++i) {
+            Matrix4f transform = Matrix4f.createTranslation(new Vector3f(0, 0, i * 256));
+            mRenderer.setMVP(Matrix4f.multiply(transform, mPerspectiveCamera.getViewProjectionMatrix()));
+            mRenderer.render();
+        }
     }
 
     @Override
