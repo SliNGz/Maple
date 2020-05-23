@@ -8,11 +8,15 @@ public interface IShader {
 
     ShaderProgram getProgram();
 
-    float getFloat(String uniformName);
+    int getInt(String name);
 
-    void setFloat(String uniformName, float value);
+    void setInt(String name, int value);
 
-    Matrix4f getMatrix4f(String uniformName);
+    float getFloat(String name);
 
-    void setMatrix4f(String uniformName, Matrix4f value);
+    void setFloat(String name, float value);
+
+    Matrix4f getMatrix4f(String name);
+
+    void setMatrix4f(String name, Matrix4f value);
 }

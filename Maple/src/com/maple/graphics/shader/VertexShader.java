@@ -4,8 +4,7 @@ import com.maple.graphics.shader.program.ShaderProgram;
 import com.maple.math.Matrix4f;
 
 public class VertexShader implements IShader {
-    private static final String MVP_UNIFORM_NAME = "u_mvp";
-    private static final String TRANSFORM_UNIFORM_NAME = "u_transform";
+    private static final String MVP_UNIFORM_NAME = "u_MVP";
 
     private Shader mShader;
 
@@ -27,23 +26,33 @@ public class VertexShader implements IShader {
     }
 
     @Override
-    public float getFloat(String uniformName) {
-        return mShader.getFloat(uniformName);
+    public int getInt(String name) {
+        return mShader.getInt(name);
     }
 
     @Override
-    public void setFloat(String uniformName, float value) {
-        mShader.setFloat(uniformName, value);
+    public void setInt(String name, int value) {
+        mShader.setInt(name, value);
     }
 
     @Override
-    public Matrix4f getMatrix4f(String uniformName) {
-        return mShader.getMatrix4f(uniformName);
+    public float getFloat(String name) {
+        return mShader.getFloat(name);
     }
 
     @Override
-    public void setMatrix4f(String uniformName, Matrix4f value) {
-        mShader.setMatrix4f(uniformName, value);
+    public void setFloat(String name, float value) {
+        mShader.setFloat(name, value);
+    }
+
+    @Override
+    public Matrix4f getMatrix4f(String name) {
+        return mShader.getMatrix4f(name);
+    }
+
+    @Override
+    public void setMatrix4f(String name, Matrix4f value) {
+        mShader.setMatrix4f(name, value);
     }
 
     public void setMVP(Matrix4f mvp) {

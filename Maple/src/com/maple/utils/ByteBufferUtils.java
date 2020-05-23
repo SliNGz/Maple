@@ -1,11 +1,19 @@
 package com.maple.utils;
 
+import com.maple.math.Vector2f;
 import com.maple.math.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
 
 public class ByteBufferUtils {
+    public static ByteBuffer extract(Vector2f vector2f) {
+        return BufferUtils.createByteBuffer(2 * Float.BYTES)
+                          .putFloat(vector2f.X)
+                          .putFloat(vector2f.Y)
+                          .flip();
+    }
+
     public static ByteBuffer extract(Vector3f vector3f) {
         return BufferUtils.createByteBuffer(3 * Float.BYTES)
                           .putFloat(vector3f.X)

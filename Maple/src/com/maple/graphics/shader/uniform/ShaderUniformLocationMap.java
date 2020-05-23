@@ -19,15 +19,15 @@ public class ShaderUniformLocationMap {
         mMap = new HashMap<>();
     }
 
-    public int get(String uniformName) {
-        Integer location = mMap.get(uniformName);
+    public int get(String name) {
+        Integer location = mMap.get(name);
         if (location == null) {
-            location = glGetUniformLocation(mProgram.getHandle(), uniformName);
+            location = glGetUniformLocation(mProgram.getHandle(), name);
             if (location != LOCATION_NOT_FOUND) {
-                mMap.put(uniformName, location);
+                mMap.put(name, location);
             } else {
                 Logger.warnCore(String.format("UNIFORM_LOCATION_NOT_FOUND PROGRAM:%d UNIFORM:%s",
-                                              mProgram.getHandle(), uniformName));
+                                              mProgram.getHandle(), name));
             }
         }
 

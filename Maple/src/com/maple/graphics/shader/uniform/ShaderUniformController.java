@@ -5,10 +5,8 @@ import com.maple.math.Matrix4f;
 
 import java.nio.FloatBuffer;
 
-import static org.lwjgl.opengl.GL20.glGetUniformf;
-import static org.lwjgl.opengl.GL20.glGetUniformfv;
-import static org.lwjgl.opengl.GL41.glProgramUniform1f;
-import static org.lwjgl.opengl.GL41.glProgramUniformMatrix4fv;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL41.*;
 
 public class ShaderUniformController {
     private final ShaderProgram mProgram;
@@ -19,27 +17,35 @@ public class ShaderUniformController {
         mUniformLocationMap = new ShaderUniformLocationMap(program);
     }
 
-    public float getFloat(String uniformName) {
-        return glGetUniformf(mProgram.getHandle(), mUniformLocationMap.get(uniformName));
+    public int getInt(String name) {
+        return glGetUniformi(mProgram.getHandle(), mUniformLocationMap.get(name));
     }
 
-    public void setFloat(String uniformName, float value) {
-        glProgramUniform1f(mProgram.getHandle(), mUniformLocationMap.get(uniformName), value);
+    public void setInt(String name, int value) {
+        glProgramUniform1i(mProgram.getHandle(), mUniformLocationMap.get(name), value);
     }
 
-    public Matrix4f getMatrix4f(String uniformName) {
+    public float getFloat(String name) {
+        return glGetUniformf(mProgram.getHandle(), mUniformLocationMap.get(name));
+    }
+
+    public void setFloat(String name, float value) {
+        glProgramUniform1f(mProgram.getHandle(), mUniformLocationMap.get(name), value);
+    }
+
+    public Matrix4f getMatrix4f(String name) {
         Matrix4f matrix = new Matrix4f();
         FloatBuffer elements = matrix.getElements();
-        glGetUniformfv(mProgram.getHandle(), mUniformLocationMap.get(uniformName), elements);
+        glGetUniformfv(mProgram.getHandle(), mUniformLocationMap.get(name), elements);
         elements.rewind();
 
         return matrix;
     }
 
-    public void setMatrix4f(String uniformName, Matrix4f value) {
+    public void setMatrix4f(String name, Matrix4f value) {
         FloatBuffer elements = value.getElements();
         elements.rewind();
-        glProgramUniformMatrix4fv(mProgram.getHandle(), mUniformLocationMap.get(uniformName), false, elements);
+        glProgramUniformMatrix4fv(mProgram.getHandle(), mUniformLocationMap.get(name), false, elements);
         elements.rewind();
     }
 }
