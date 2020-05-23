@@ -27,19 +27,33 @@ public class Shader implements IShader {
         return mUniformController;
     }
 
-    public float getFloat(String uniformName) {
-        return mUniformController.getFloat(uniformName);
+    @Override
+    public int getInt(String name) {
+        return mUniformController.getInt(name);
     }
 
-    public void setFloat(String uniformName, float value) {
-        mUniformController.setFloat(uniformName, value);
+    @Override
+    public void setInt(String name, int value) {
+        mUniformController.setInt(name, value);
     }
 
-    public Matrix4f getMatrix4f(String uniformName) {
-        return mUniformController.getMatrix4f(uniformName);
+    @Override
+    public float getFloat(String name) {
+        return mUniformController.getFloat(name);
     }
 
-    public void setMatrix4f(String uniformName, Matrix4f value) {
-        mUniformController.setMatrix4f(uniformName, value);
+    @Override
+    public void setFloat(String name, float value) {
+        mUniformController.setFloat(name, value);
+    }
+
+    @Override
+    public Matrix4f getMatrix4f(String name) {
+        return mUniformController.getMatrix4f(name);
+    }
+
+    @Override
+    public void setMatrix4f(String name, Matrix4f value) {
+        mUniformController.setMatrix4f(name, value);
     }
 }

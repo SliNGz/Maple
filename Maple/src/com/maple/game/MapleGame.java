@@ -17,6 +17,8 @@ import com.maple.graphics.shader.ShaderCreator;
 import com.maple.graphics.shader.ShaderLoader;
 import com.maple.graphics.shader.binder.ShaderBinderCreator;
 import com.maple.graphics.shader.manager.ShaderManager;
+import com.maple.graphics.texture.Texture2DCreator;
+import com.maple.graphics.texture.Texture2DLoader;
 import com.maple.graphics.window.Window;
 import com.maple.input.InputModeCallbackDispatcher;
 import com.maple.input.keyboard.KeyCallback;
@@ -50,6 +52,7 @@ public class MapleGame implements IGame {
     private Keymap mKeymap;
     private ShaderManager mShaderManager;
     private MousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
+    private Texture2DLoader mTexture2DLoader;
 
     private KeyboardUpdater mKeyboardUpdater;
 
@@ -74,9 +77,10 @@ public class MapleGame implements IGame {
         initializeShaderManager();
         initializeRenderer();
         initializeGraphicsManager();
+        initializeTexture2DLoader();
 
         GameContext gameContext = new GameContext(mGraphicsManager, mKeymap, mShaderManager,
-                                                  mMousePositionCallbackDispatcher);
+                                                  mMousePositionCallbackDispatcher, mTexture2DLoader);
         mGame = mGameCreator.create(gameContext);
         mGame.initialize();
     }
@@ -216,5 +220,10 @@ public class MapleGame implements IGame {
                                                indexBufferCreator,
                                                mRenderer,
                                                terrainMeshCreator);
+    }
+
+    private void initializeTexture2DLoader() {
+        Texture2DCreator texture2DCreator = new Texture2DCreator();
+        mTexture2DLoader = new Texture2DLoader(texture2DCreator);
     }
 }
