@@ -114,7 +114,7 @@ public class PerspectiveCamera implements ICamera {
     }
 
     private void updateViewProjectionMatrix() {
-        mViewProjection = Matrix4f.multiply(mView, mProjection);
+        mViewProjection = Matrix4f.multiply(mProjection, mView);
     }
 
     @Override

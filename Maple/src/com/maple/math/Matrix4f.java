@@ -69,18 +69,18 @@ public class Matrix4f {
     }
 
     public Matrix4f multiply(Matrix4f other) {
-        Vector4f otherRow0 = other.getRow(0);
-        Vector4f otherRow1 = other.getRow(1);
-        Vector4f otherRow2 = other.getRow(2);
-        Vector4f otherRow3 = other.getRow(3);
+        Vector4f row0 = getRow(0);
+        Vector4f row1 = getRow(1);
+        Vector4f row2 = getRow(2);
+        Vector4f row3 = getRow(3);
 
         for (int i = 0; i < COLUMNS_AMOUNT; ++i) {
-            Vector4f column = getColumn(i);
+            Vector4f otherColumn = other.getColumn(i);
 
-            set(i, 0, Vector4f.dot(column, otherRow0));
-            set(i, 1, Vector4f.dot(column, otherRow1));
-            set(i, 2, Vector4f.dot(column, otherRow2));
-            set(i, 3, Vector4f.dot(column, otherRow3));
+            set(i, 0, Vector4f.dot(row0, otherColumn));
+            set(i, 1, Vector4f.dot(row1, otherColumn));
+            set(i, 2, Vector4f.dot(row2, otherColumn));
+            set(i, 3, Vector4f.dot(row3, otherColumn));
         }
 
         return this;
@@ -163,14 +163,30 @@ public class Matrix4f {
         float m00 = constant / aspectRatio;
         float m11 = constant;
         float m22 = planesSum / negatedPlanesDiff;
-        float m32 = (2 * farPlane * nearPlane) / negatedPlanesDiff;
-        float m33 = -1.0F;
+        float m32 = (2.0F * farPlane * nearPlane) / negatedPlanesDiff;
+        float m23 = -1.0F;
 
         return new Matrix4f(m00, 0, 0, 0,
                             0, m11, 0, 0,
                             0, 0, m22, m32,
-                            0, 0, m33, 0);
+                            0, 0, m23, 0);
     }
+
+    public static Matrix4f createOrthographic(float left, float right, float bottom, float top, float nearPlane, float farPlane) {
+        float m00 = 2.0F / (right - left);
+        float m11 = 2.0F / (top - bottom);
+        float m22 = -2.0F / (farPlane - nearPlane);
+        float m30 = (right + left) / -(right - left);
+        float m31 = (top + bottom) / -(top - bottom);
+        float m32 = (farPlane + nearPlane) / -(farPlane - nearPlane);
+        float m33 = 1.0F;
+
+        return new Matrix4f(m00, 0, 0, m30,
+                            0, m11, 0, m31,
+                            0, 0, m22, m32,
+                            0, 0, 0, m33);
+    }
+
 
     public static Matrix4f createTranslation(Vector3f position) {
         float m30 = position.X;
@@ -196,5 +212,50 @@ public class Matrix4f {
 
     public static Matrix4f createScale(float scale) {
         return createScale(new Vector3f(scale, scale, scale));
+    }
+
+    public static Matrix4f createRotationX(float radians) {
+        float cosTheta = (float) Math.cos(radians);
+        float sinTheta = (float) Math.sin(radians);
+
+        float m11 = cosTheta;
+        float m12 = sinTheta;
+        float m21 = -sinTheta;
+        float m22 = cosTheta;
+
+        return new Matrix4f(1, 0, 0, 0,
+                            0, m11, m21, 0,
+                            0, m12, m22, 0,
+                            0, 0, 0, 1);
+    }
+
+    public static Matrix4f createRotationY(float radians) {
+        float cosTheta = (float) Math.cos(radians);
+        float sinTheta = (float) Math.sin(radians);
+
+        float m00 = cosTheta;
+        float m02 = -sinTheta;
+        float m20 = sinTheta;
+        float m22 = cosTheta;
+
+        return new Matrix4f(m00, 0, m20, 0,
+                            0, 1, 0, 0,
+                            m02, 0, m22, 0,
+                            0, 0, 0, 1);
+    }
+
+    public static Matrix4f createRotationZ(float radians) {
+        float cosTheta = (float) Math.cos(radians);
+        float sinTheta = (float) Math.sin(radians);
+
+        float m00 = cosTheta;
+        float m01 = sinTheta;
+        float m10 = -sinTheta;
+        float m11 = cosTheta;
+
+        return new Matrix4f(m00, m10, 0, 0,
+                            m01, m11, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1);
     }
 }
