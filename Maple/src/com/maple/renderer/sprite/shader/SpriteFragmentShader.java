@@ -1,19 +1,18 @@
-package com.maple.graphics.shader;
+package com.maple.renderer.sprite.shader;
 
+import com.maple.graphics.shader.IShader;
+import com.maple.graphics.shader.ShaderType;
 import com.maple.graphics.shader.program.ShaderProgram;
 import com.maple.graphics.shader.uniform.ShaderUniformController;
-import com.maple.math.Matrix4f;
+import com.maple.utils.Color;
 
-public class VertexShader implements IVertexShader {
-    private static final String UNIFORM_MVP = "u_MVP";
+public class SpriteFragmentShader implements IShader {
+    private static final String UNIFORM_COLOR = "u_Color";
 
-    private Shader mShader;
+    private IShader mShader;
 
-    private Matrix4f mMVP;
-
-    public VertexShader(Shader shader) {
+    public SpriteFragmentShader(IShader shader) {
         mShader = shader;
-        mMVP = null;
     }
 
     @Override
@@ -31,10 +30,7 @@ public class VertexShader implements IVertexShader {
         return mShader.getUniformController();
     }
 
-    public void setMVP(Matrix4f mvp) {
-        if (!mvp.equals(mMVP)) {
-            getUniformController().setMatrix4f(UNIFORM_MVP, mvp);
-            mMVP = new Matrix4f(mvp);
-        }
+    public void setColor(Color color) {
+        getUniformController().setColor(UNIFORM_COLOR, color);
     }
 }

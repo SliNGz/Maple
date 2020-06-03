@@ -11,8 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.stb.STBImage.STBI_rgb;
-import static org.lwjgl.stb.STBImage.STBI_rgb_alpha;
+import static org.lwjgl.stb.STBImage.*;
 
 public class Texture2DLoader {
     private Texture2DCreator mTexture2DCreator;
@@ -27,7 +26,7 @@ public class Texture2DLoader {
             IntBuffer heightBuffer = BufferUtils.createIntBuffer(1);
             IntBuffer channelsBuffer = BufferUtils.createIntBuffer(1);
 
-            ByteBuffer data = STBImage.stbi_load(textureFile.getPath(), widthBuffer, heightBuffer, channelsBuffer, 4);
+            ByteBuffer data = STBImage.stbi_load(textureFile.getPath(), widthBuffer, heightBuffer, channelsBuffer, STBI_default);
             if (data == null) {
                 throw new STBImageLoadFailedException(STBImage.stbi_failure_reason());
             }
@@ -49,10 +48,9 @@ public class Texture2DLoader {
                     internalFormat = GL_RGBA8;
                     dataFormat = GL_RGBA;
                     break;
-            }
 
-            if (internalFormat == 0 || dataFormat == 0) {
-                throw new Texture2DFormatNotSupported();
+                default:
+                    throw new Texture2DFormatNotSupported();
             }
 
             return mTexture2DCreator.create(width, height, internalFormat, dataFormat, data);

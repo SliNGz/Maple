@@ -9,8 +9,9 @@ import com.maple.graphics.buffer.vertex.VertexBuffer;
 import com.maple.graphics.buffer.vertex.VertexBufferCreator;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
-import com.maple.graphics.shader.exceptions.ShaderLoadFailedException;
 import com.maple.graphics.shader.manager.IShaderManager;
+import com.maple.graphics.texture.Texture2D;
+import com.maple.graphics.texture.Texture2DLoader;
 import com.maple.graphics.window.Window;
 import com.maple.input.keyboard.IKeyAction;
 import com.maple.input.keyboard.Key;
@@ -18,19 +19,23 @@ import com.maple.input.keyboard.map.IKeymap;
 import com.maple.input.mouse.IMousePositionCallbackDispatcher;
 import com.maple.log.Logger;
 import com.maple.math.MathHelper;
-import com.maple.math.Matrix4f;
 import com.maple.math.Vector3f;
 import com.maple.renderer.Renderer;
+import com.maple.renderer.camera.OrthographicCamera;
 import com.maple.renderer.camera.PerspectiveCamera;
 import com.maple.renderer.camera.PerspectiveCameraController;
 import com.maple.renderer.mesh.Mesh;
 import com.maple.renderer.mesh.terrain.ITerrainColorizer;
 import com.maple.renderer.mesh.terrain.TerrainColorBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
+import com.maple.renderer.sprite.Sprite;
+import com.maple.renderer.sprite.SpriteRenderer;
 import com.maple.utils.Color;
 import com.maple.world.terrain.Terrain;
 import com.maple.world.terrain.TerrainCreator;
 import com.maple.world.terrain.heightmap.DefaultHeightMapGeneratorBuilder;
+
+import java.io.File;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -38,38 +43,42 @@ public class Game implements IGame {
     private GraphicsManager mGraphicsManager;
     private Window mWindow;
     private Renderer mRenderer;
+    private SpriteRenderer mSpriteRenderer;
     private IKeymap mKeymap;
     private IShaderManager mShaderManager;
     private IMousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
+    private Texture2DLoader mTexture2DLoader;
 
     private IShader mVertexShader;
     private IShader mFragmentShader;
+
     private Effect mEffect;
 
     private PerspectiveCamera mPerspectiveCamera;
+    private OrthographicCamera mOrthographicCamera;
 
     private Terrain mTerrain;
     private Mesh mTerrainMesh;
+
+    private Texture2D mTexture;
 
     public Game(GameContext context) {
         mGraphicsManager = context.getGraphicsManager();
         mWindow = mGraphicsManager.getWindow();
         mRenderer = mGraphicsManager.getRenderer();
+        mSpriteRenderer = mGraphicsManager.getSpriteRenderer();
         mKeymap = context.getKeymap();
         mShaderManager = context.getShaderManager();
         mMousePositionCallbackDispatcher = context.getMousePositionCallbackDispatcher();
+        mTexture2DLoader = context.getTexture2DLoader();
     }
 
     @Override
     public void initialize() throws OperationFailedException {
         Logger.setApplicationTag("Playground");
 
-        try {
-            mVertexShader = mShaderManager.load("Playground/res/vs_shader.vs");
-            mFragmentShader = mShaderManager.load("Playground/res/fs_shader.fs");
-        } catch (ShaderLoadFailedException e) {
-            throw new OperationFailedException(e);
-        }
+        mVertexShader = mShaderManager.load("Playground/res/vs_shader.vs");
+        mFragmentShader = mShaderManager.load("Playground/res/fs_shader.fs");
 
         mEffect = new Effect(mVertexShader, mFragmentShader);
 
@@ -77,12 +86,64 @@ public class Game implements IGame {
         mPerspectiveCamera.setPosition(new Vector3f(0, 80, 0));
         mMousePositionCallbackDispatcher.addDisabledCursorCallback(new PerspectiveCameraController(mPerspectiveCamera, 2.5F));
 
+        initializeKeyBindings();
+
+        mOrthographicCamera = new OrthographicCamera(mWindow.getWidth(), mWindow.getHeight());
+
+        TerrainCreator terrainCreator = new TerrainCreator(new DefaultHeightMapGeneratorBuilder().build());
+        mTerrain = terrainCreator.create(256, 256);
+        TerrainMeshCreator terrainMeshCreator = mGraphicsManager.getTerrainMeshCreator();
+        VertexBufferCreator vertexBufferCreator = mGraphicsManager.getVertexBufferCreator();
+        ITerrainColorizer terrainColorizer = (x, y, z) -> new Color(x, (int) y, z);
+        TerrainColorBufferCreator terrainColorBufferCreator = new TerrainColorBufferCreator(vertexBufferCreator,
+                                                                                            terrainColorizer);
+        VertexBuffer colorBuffer = terrainColorBufferCreator.create(mTerrain);
+
+        mTerrainMesh = terrainMeshCreator.create(mTerrain, colorBuffer);
+
+        mTexture = mTexture2DLoader.load(new File("Playground/res/image.png"));
+    }
+
+    @Override
+    public void update(GameTime gameTime) {
+//        float y = mTerrain.get(mPerspectiveCamera.getPosition().X, mPerspectiveCamera.getPosition().Z);
+//        y += 1.8;
+//        mPerspectiveCamera.setPosition(new Vector3f(mPerspectiveCamera.getPosition().X, y, mPerspectiveCamera.getPosition().Z));
+
+//        mOrthographicCamera.setPosition(new Vector3f(mOrthographicCamera.getPosition().X + 0.001F,
+//                                                     mOrthographicCamera.getPosition().Y,
+//                                                     mOrthographicCamera.getPosition().Z));
+//
+//        mOrthographicCamera.setRoll(mOrthographicCamera.getRoll() + 0.007F);
+    }
+
+    @Override
+    public void render(float alpha) {
+        mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
+
+        mSpriteRenderer.beginScene(mOrthographicCamera);
+        mSpriteRenderer.render(new Sprite(mTexture).setMaskDimensions(16, 16).setDimensions(16, 16).setMaskPosition(24, 0));
+        mSpriteRenderer.endScene();
+    }
+
+    @Override
+    public void cleanup() {
+    }
+
+    @Override
+    public boolean shouldExit() {
+        return false;
+    }
+
+    private void initializeKeyBindings() {
         mKeymap.add(new Key(GLFW_KEY_W), new IKeyAction() {
             @Override
             public void onKeyDown() {
                 Vector3f vector3f = Vector3f.createLookAt(mPerspectiveCamera.getRotation().X, mPerspectiveCamera.getRotation().Y);
                 vector3f.normalize();
                 mPerspectiveCamera.addPosition(vector3f);
+
+                mOrthographicCamera.setScale(mOrthographicCamera.getScale() - 0.01F);
             }
 
             @Override
@@ -96,6 +157,8 @@ public class Game implements IGame {
                                                           mPerspectiveCamera.getRotation().Y - MathHelper.PI / 2);
                 vector3f.normalize();
                 mPerspectiveCamera.addPosition(vector3f);
+
+                mOrthographicCamera.setScale(1.0F);
             }
 
             @Override
@@ -110,6 +173,8 @@ public class Game implements IGame {
                 vector3f.negate();
                 vector3f.normalize();
                 mPerspectiveCamera.addPosition(vector3f);
+
+                mOrthographicCamera.setScale(mOrthographicCamera.getScale() + 0.01F);
             }
 
             @Override
@@ -129,48 +194,5 @@ public class Game implements IGame {
             public void onKeyUp() {
             }
         });
-
-        TerrainCreator terrainCreator = new TerrainCreator(new DefaultHeightMapGeneratorBuilder().build());
-        mTerrain = terrainCreator.create(256, 256);
-        TerrainMeshCreator terrainMeshCreator = mGraphicsManager.getTerrainMeshCreator();
-        mTerrainMesh = terrainMeshCreator.create(mTerrain);
-
-        VertexBufferCreator vertexBufferCreator = mGraphicsManager.getVertexBufferCreator();
-        ITerrainColorizer terrainColorizer = (x, y, z) -> new Color(x, (int) y, z);
-        TerrainColorBufferCreator terrainColorBufferCreator = new TerrainColorBufferCreator(vertexBufferCreator,
-                                                                                            terrainColorizer);
-        VertexBuffer colorBuffer = terrainColorBufferCreator.create(mTerrain);
-
-        mTerrainMesh = terrainMeshCreator.create(mTerrain, colorBuffer);
-
-        mRenderer.setEffect(mEffect);
-        mRenderer.bindMesh(mTerrainMesh);
-    }
-
-    @Override
-    public void update(GameTime gameTime) {
-        float y = mTerrain.get(mPerspectiveCamera.getPosition().X, mPerspectiveCamera.getPosition().Z);
-        y += 1.8;
-        mPerspectiveCamera.setPosition(new Vector3f(mPerspectiveCamera.getPosition().X, y, mPerspectiveCamera.getPosition().Z));
-    }
-
-    @Override
-    public void render(float alpha) {
-        mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
-
-        for (int i = 0; i < 2; ++i) {
-            Matrix4f transform = Matrix4f.createTranslation(new Vector3f(0, 0, i * 256));
-            mRenderer.setMVP(Matrix4f.multiply(transform, mPerspectiveCamera.getViewProjectionMatrix()));
-            mRenderer.render();
-        }
-    }
-
-    @Override
-    public void cleanup() {
-    }
-
-    @Override
-    public boolean shouldExit() {
-        return false;
     }
 }

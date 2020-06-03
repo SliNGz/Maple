@@ -1,8 +1,8 @@
 package com.maple.graphics.shader.effect;
 
 import com.maple.graphics.shader.IShader;
+import com.maple.graphics.shader.IVertexShader;
 import com.maple.graphics.shader.ShaderType;
-import com.maple.graphics.shader.VertexShader;
 import com.maple.graphics.shader.exceptions.ShaderNotSetException;
 
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class Effect {
     private Map<ShaderType, IShader> mShaders;
-    private VertexShader mVertexShader;
+    private IVertexShader mVertexShader;
     private IShader mFragmentShader;
     private IShader mGeometryShader;
 
@@ -22,14 +22,22 @@ public class Effect {
         }
     }
 
-    private void put(IShader shader) throws UnsupportedOperationException {
+    public void put(IShader shader) throws UnsupportedOperationException {
         mShaders.put(shader.getType(), shader);
+        updateShaderCache(shader.getType(), shader);
+    }
 
-        if (shader.getType().equals(ShaderType.VERTEX_SHADER)) {
-            mVertexShader = (VertexShader) shader;
-        } else if (shader.getType().equals(ShaderType.FRAGMENT_SHADER)) {
+    public void remove(ShaderType shaderType) {
+        mShaders.remove(shaderType);
+        updateShaderCache(shaderType, null);
+    }
+
+    private void updateShaderCache(ShaderType shaderType, IShader shader) {
+        if (shaderType.equals(ShaderType.VERTEX_SHADER)) {
+            mVertexShader = (IVertexShader) shader;
+        } else if (shaderType.equals(ShaderType.FRAGMENT_SHADER)) {
             mFragmentShader = shader;
-        } else if (shader.getType().equals(ShaderType.GEOMETRY_SHADER)) {
+        } else if (shaderType.equals(ShaderType.GEOMETRY_SHADER)) {
             mGeometryShader = shader;
         } else {
             throw new UnsupportedOperationException();
@@ -45,7 +53,7 @@ public class Effect {
         return shader;
     }
 
-    public VertexShader getVertexShader() throws ShaderNotSetException {
+    public IVertexShader getVertexShader() throws ShaderNotSetException {
         if (mVertexShader == null) {
             throw new ShaderNotSetException();
         }

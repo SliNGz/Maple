@@ -30,9 +30,14 @@ import com.maple.log.Logger;
 import com.maple.math.Vector2f;
 import com.maple.renderer.Renderer;
 import com.maple.renderer.RendererCreator;
+import com.maple.renderer.mesh.Mesh;
+import com.maple.renderer.mesh.quad.PositionTextureQuadMeshCreator;
 import com.maple.renderer.mesh.terrain.TerrainIndicesBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.renderer.mesh.terrain.TerrainPositionBufferCreator;
+import com.maple.renderer.sprite.SpriteRenderer;
+import com.maple.renderer.sprite.shader.SpriteFragmentShader;
+import com.maple.renderer.sprite.shader.SpriteVertexShader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -47,6 +52,7 @@ public class MapleGame implements IGame {
     private Window mWindow;
     private RendererCreator mRendererCreator;
     private Renderer mRenderer;
+    private SpriteRenderer mSpriteRenderer;
     private GraphicsManager mGraphicsManager;
 
     private Keymap mKeymap;
@@ -214,11 +220,22 @@ public class MapleGame implements IGame {
                                                                        positionBufferCreator,
                                                                        terrainIndicesBufferCreator);
 
+        SpriteVertexShader spriteVertexShader = new SpriteVertexShader(mShaderManager.load("Playground/res/sprite_vertex_shader.vs"));
+        SpriteFragmentShader spriteFragmentShader = new SpriteFragmentShader(mShaderManager.load("Playground/res/sprite_fragment_shader.fs"));
+
+        PositionTextureQuadMeshCreator positionTextureQuadMeshCreator = new PositionTextureQuadMeshCreator(vertexBufferCreator,
+                                                                                                           vertexArrayCreator,
+                                                                                                           indexBufferCreator);
+        Mesh quadMesh = positionTextureQuadMeshCreator.create();
+
+        mSpriteRenderer = new SpriteRenderer(mRenderer, spriteVertexShader, spriteFragmentShader, quadMesh);
+
         mGraphicsManager = new GraphicsManager(mWindow,
                                                vertexArrayCreator,
                                                vertexBufferCreator,
                                                indexBufferCreator,
                                                mRenderer,
+                                               mSpriteRenderer,
                                                terrainMeshCreator);
     }
 

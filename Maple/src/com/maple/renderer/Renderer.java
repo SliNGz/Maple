@@ -6,9 +6,12 @@ import com.maple.graphics.buffer.exceptions.NoBoundIndexBufferException;
 import com.maple.graphics.buffer.exceptions.NoBoundVertexArrayException;
 import com.maple.graphics.buffer.index.IndexBuffer;
 import com.maple.graphics.buffer.vertex.VertexArray;
-import com.maple.graphics.shader.VertexShader;
+import com.maple.graphics.shader.IVertexShader;
 import com.maple.graphics.shader.effect.Effect;
 import com.maple.graphics.shader.effect.EffectBinder;
+import com.maple.graphics.texture.Texture2D;
+import com.maple.graphics.texture.Texture2DBinder;
+import com.maple.graphics.texture.exceptions.NoBoundTextureException;
 import com.maple.log.Logger;
 import com.maple.math.Matrix4f;
 import com.maple.renderer.cull.CullingController;
@@ -24,18 +27,20 @@ public class Renderer {
     private RendererBufferClearer mBufferClearer;
     private EffectBinder mEffectBinder;
     private BufferBinder mBufferBinder;
+    private Texture2DBinder mTextureBinder;
 
     private Effect mEffect;
     private Matrix4f mMVP;
 
     public Renderer(DepthTestController depthTestController, CullingController cullingController,
                     RendererBufferClearer bufferClearer, EffectBinder effectBinder,
-                    BufferBinder bufferBinder) {
+                    BufferBinder bufferBinder, Texture2DBinder textureBinder) {
         mDepthTestController = depthTestController;
         mCullingController = cullingController;
         mBufferClearer = bufferClearer;
         mEffectBinder = effectBinder;
         mBufferBinder = bufferBinder;
+        mTextureBinder = textureBinder;
 
         mEffect = new Effect();
         mMVP = Matrix4f.createIdentity();
@@ -115,11 +120,23 @@ public class Renderer {
         mBufferBinder.unbindIndexBuffer();
     }
 
+    public void bindTexture(Texture2D texture) {
+        mTextureBinder.bind(texture);
+    }
+
+    public void unbindTexture() {
+        mTextureBinder.unbind();
+    }
+
+    public Texture2D getBoundTexture() throws NoBoundTextureException {
+        return mTextureBinder.getBoundTexture();
+    }
+
     public void render() {
         try {
             try {
                 mEffectBinder.bind(mEffect);
-                VertexShader vertexShader = mEffect.getVertexShader();
+                IVertexShader vertexShader = mEffect.getVertexShader();
                 vertexShader.setMVP(mMVP);
 
                 VertexArray vertexArray = mBufferBinder.getBoundVertexArray();

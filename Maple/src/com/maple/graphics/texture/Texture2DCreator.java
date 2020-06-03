@@ -19,10 +19,10 @@ public class Texture2DCreator {
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        return new Texture2D(handle);
+        return new Texture2D(handle, width, height);
     }
 
-    public void destroy(Texture2D texture2D) {
-        glDeleteTextures(texture2D.getHandle());
+    public void destroy(Texture2D texture) {
+        glDeleteTextures(texture.getHandle());
     }
 }

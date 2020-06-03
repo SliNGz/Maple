@@ -1,6 +1,7 @@
 package com.maple.utils;
 
 import com.maple.math.MathHelper;
+import com.maple.math.Vector4f;
 
 public class Color {
     private int mR;
@@ -61,5 +62,9 @@ public class Color {
     public Color setA(int a) {
         mA = MathHelper.clamp(a, 0, 255);
         return this;
+    }
+
+    public Vector4f toVector4f() {
+        return new Vector4f(mR / 255.0F, mG / 255.0F, mB / 255.0F, mA / 255.0F);
     }
 }

@@ -20,7 +20,6 @@ public class TerrainMeshCreator {
         mIndicesBufferCreator = indicesBufferCreator;
     }
 
-
     public Mesh create(Terrain terrain, VertexBuffer... additionalVertexBuffers) {
         VertexBuffer[] vertexBuffers = new VertexBuffer[additionalVertexBuffers.length + 1];
         vertexBuffers[0] = mPositionBufferCreator.create(terrain);

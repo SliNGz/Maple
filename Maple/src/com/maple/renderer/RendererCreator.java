@@ -4,6 +4,7 @@ import com.maple.graphics.buffer.BufferBinder;
 import com.maple.graphics.shader.binder.ShaderBinder;
 import com.maple.graphics.shader.binder.ShaderBinderCreator;
 import com.maple.graphics.shader.effect.EffectBinder;
+import com.maple.graphics.texture.Texture2DBinder;
 import com.maple.renderer.cull.CullingController;
 import com.maple.renderer.cull.CullingFace;
 import com.maple.renderer.cull.CullingMode;
@@ -26,6 +27,8 @@ public class RendererCreator {
 
         BufferBinder bufferBinder = new BufferBinder();
 
+        Texture2DBinder textureBinder = new Texture2DBinder();
+
         depthTestController.enable();
         cullingController.enable();
         cullingController.setFaceCulling(CullingFace.BACK);
@@ -34,7 +37,7 @@ public class RendererCreator {
         bufferClearer.enableColorBufferBit();
         bufferClearer.enableDepthBufferBit();
 
-        return new Renderer(depthTestController, cullingController, bufferClearer, effectBinder, bufferBinder);
+        return new Renderer(depthTestController, cullingController, bufferClearer, effectBinder, bufferBinder, textureBinder);
     }
 
     public void destroy(Renderer renderer) {
