@@ -122,6 +122,17 @@ public class Matrix4f {
         return new Matrix4f(left).multiply(right);
     }
 
+    public static Matrix4f multiply(Matrix4f... matrices) {
+        Matrix4f result = new Matrix4f(matrices[0]);
+
+        for (int i = 1; i < matrices.length; ++i) {
+            Matrix4f matrix = matrices[i];
+            result = Matrix4f.multiply(result, matrix);
+        }
+
+        return result;
+    }
+
     public static Matrix4f createIdentity() {
         return new Matrix4f(1, 0, 0, 0,
                             0, 1, 0, 0,
