@@ -1,5 +1,6 @@
 package com.playground.game;
 
+import com.maple.content.ContentLoader;
 import com.maple.game.GameContext;
 import com.maple.game.IGame;
 import com.maple.game.exceptions.OperationFailedException;
@@ -9,9 +10,7 @@ import com.maple.graphics.buffer.vertex.VertexBuffer;
 import com.maple.graphics.buffer.vertex.VertexBufferCreator;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
-import com.maple.graphics.shader.manager.IShaderManager;
 import com.maple.graphics.texture.Texture2D;
-import com.maple.graphics.texture.Texture2DLoader;
 import com.maple.graphics.window.Window;
 import com.maple.input.keyboard.IKeyAction;
 import com.maple.input.keyboard.Key;
@@ -35,8 +34,6 @@ import com.maple.world.terrain.Terrain;
 import com.maple.world.terrain.TerrainCreator;
 import com.maple.world.terrain.heightmap.DefaultHeightMapGeneratorBuilder;
 
-import java.io.File;
-
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Game implements IGame {
@@ -45,9 +42,8 @@ public class Game implements IGame {
     private Renderer mRenderer;
     private SpriteRenderer mSpriteRenderer;
     private IKeymap mKeymap;
-    private IShaderManager mShaderManager;
+    private ContentLoader mContentLoader;
     private IMousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
-    private Texture2DLoader mTexture2DLoader;
 
     private IShader mVertexShader;
     private IShader mFragmentShader;
@@ -68,17 +64,16 @@ public class Game implements IGame {
         mRenderer = mGraphicsManager.getRenderer();
         mSpriteRenderer = mGraphicsManager.getSpriteRenderer();
         mKeymap = context.getKeymap();
-        mShaderManager = context.getShaderManager();
+        mContentLoader = context.getContentLoader();
         mMousePositionCallbackDispatcher = context.getMousePositionCallbackDispatcher();
-        mTexture2DLoader = context.getTexture2DLoader();
     }
 
     @Override
     public void initialize() throws OperationFailedException {
         Logger.setApplicationTag("Playground");
 
-        mVertexShader = mShaderManager.load("Playground/res/vs_shader.vs");
-        mFragmentShader = mShaderManager.load("Playground/res/fs_shader.fs");
+        mVertexShader = mContentLoader.load(IShader.class, "vs_shader.vs");
+        mFragmentShader = mContentLoader.load(IShader.class, "fs_shader.fs");
 
         mEffect = new Effect(mVertexShader, mFragmentShader);
 
@@ -101,7 +96,7 @@ public class Game implements IGame {
 
         mTerrainMesh = terrainMeshCreator.create(mTerrain, colorBuffer);
 
-        mTexture = mTexture2DLoader.load(new File("Playground/res/image.png"));
+        mTexture = mContentLoader.load(Texture2D.class, "image.png");
     }
 
     @Override

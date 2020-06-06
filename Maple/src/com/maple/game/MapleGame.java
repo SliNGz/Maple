@@ -1,5 +1,6 @@
 package com.maple.game;
 
+import com.maple.content.ContentLoader;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.GLFWHelper;
@@ -13,12 +14,8 @@ import com.maple.graphics.exceptions.MonitorRetrievalFailedException;
 import com.maple.graphics.exceptions.VideoModeRetrievalFailedException;
 import com.maple.graphics.exceptions.WindowCreationFailedException;
 import com.maple.graphics.monitor.Monitor;
-import com.maple.graphics.shader.ShaderCreator;
-import com.maple.graphics.shader.ShaderLoader;
+import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.binder.ShaderBinderCreator;
-import com.maple.graphics.shader.manager.ShaderManager;
-import com.maple.graphics.texture.Texture2DCreator;
-import com.maple.graphics.texture.Texture2DLoader;
 import com.maple.graphics.window.Window;
 import com.maple.input.InputModeCallbackDispatcher;
 import com.maple.input.keyboard.KeyCallback;
@@ -56,9 +53,8 @@ public class MapleGame implements IGame {
     private GraphicsManager mGraphicsManager;
 
     private Keymap mKeymap;
-    private ShaderManager mShaderManager;
+    private ContentLoader mContentLoader;
     private MousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
-    private Texture2DLoader mTexture2DLoader;
 
     private KeyboardUpdater mKeyboardUpdater;
 
@@ -80,13 +76,12 @@ public class MapleGame implements IGame {
         initializeGL();
         initializeKeyboard();
         initializeMouse();
-        initializeShaderManager();
+        initializeContentLoader();
         initializeRenderer();
         initializeGraphicsManager();
-        initializeTexture2DLoader();
 
-        GameContext gameContext = new GameContext(mGraphicsManager, mKeymap, mShaderManager,
-                                                  mMousePositionCallbackDispatcher, mTexture2DLoader);
+        GameContext gameContext = new GameContext(mGraphicsManager, mKeymap, mContentLoader,
+                                                  mMousePositionCallbackDispatcher);
         mGame = mGameCreator.create(gameContext);
         mGame.initialize();
     }
@@ -108,7 +103,7 @@ public class MapleGame implements IGame {
         mGame.cleanup();
 
         cleanRenderer();
-        cleanShaderManager();
+        cleanContentLoader();
 
         GLFWHelper.freeCallbacks(mWindow);
         GLFWHelper.destroyWindow(mWindow);
@@ -187,14 +182,12 @@ public class MapleGame implements IGame {
         GLFWHelper.setWindowInputMode(mWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 
-    private void initializeShaderManager() {
-        ShaderCreator shaderCreator = new ShaderCreator();
-        ShaderLoader shaderLoader = new ShaderLoader(shaderCreator);
-        mShaderManager = new ShaderManager(shaderLoader);
+    private void initializeContentLoader() {
+        mContentLoader = new ContentLoader(mGameProperties.getContentFolder());
     }
 
-    private void cleanShaderManager() {
-        mShaderManager.cleanup();
+    private void cleanContentLoader() {
+        mContentLoader.cleanup();
     }
 
     private void initializeRenderer() {
@@ -220,8 +213,8 @@ public class MapleGame implements IGame {
                                                                        positionBufferCreator,
                                                                        terrainIndicesBufferCreator);
 
-        SpriteVertexShader spriteVertexShader = new SpriteVertexShader(mShaderManager.load("Playground/res/sprite_vertex_shader.vs"));
-        SpriteFragmentShader spriteFragmentShader = new SpriteFragmentShader(mShaderManager.load("Playground/res/sprite_fragment_shader.fs"));
+        SpriteVertexShader spriteVertexShader = new SpriteVertexShader(mContentLoader.load(IShader.class, "sprite_vertex_shader.vs"));
+        SpriteFragmentShader spriteFragmentShader = new SpriteFragmentShader(mContentLoader.load(IShader.class, "sprite_fragment_shader.fs"));
 
         PositionTextureQuadMeshCreator positionTextureQuadMeshCreator = new PositionTextureQuadMeshCreator(vertexBufferCreator,
                                                                                                            vertexArrayCreator,
@@ -237,10 +230,5 @@ public class MapleGame implements IGame {
                                                mRenderer,
                                                mSpriteRenderer,
                                                terrainMeshCreator);
-    }
-
-    private void initializeTexture2DLoader() {
-        Texture2DCreator texture2DCreator = new Texture2DCreator();
-        mTexture2DLoader = new Texture2DLoader(texture2DCreator);
     }
 }

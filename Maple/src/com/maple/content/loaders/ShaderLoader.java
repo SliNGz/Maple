@@ -1,20 +1,29 @@
-package com.maple.graphics.shader;
+package com.maple.content.loaders;
 
-import com.maple.graphics.shader.exceptions.*;
+import com.maple.content.IContentLoader;
+import com.maple.content.exceptions.ShaderLoadFailedException;
+import com.maple.graphics.shader.IShader;
+import com.maple.graphics.shader.ShaderCreator;
+import com.maple.graphics.shader.ShaderType;
+import com.maple.graphics.shader.exceptions.ShaderCreationFailedException;
+import com.maple.graphics.shader.exceptions.ShaderSourceRetrievalFailedException;
+import com.maple.graphics.shader.exceptions.ShaderTypeResolutionFailedException;
+import com.maple.graphics.shader.exceptions.UnknownShaderType;
 import com.maple.utils.FileUtils;
 import com.maple.utils.exceptions.NoFileExtensionException;
 
 import java.io.*;
 
-public class ShaderLoader {
+public class ShaderLoader implements IContentLoader<IShader> {
     private ShaderCreator mShaderCreator;
 
     public ShaderLoader(ShaderCreator shaderCreator) {
         mShaderCreator = shaderCreator;
     }
 
-    public IShader load(File shaderFile) throws ShaderLoadFailedException {
+    public IShader load(String path) {
         try {
+            File shaderFile = new File(path);
             ShaderType shaderType = getShaderType(shaderFile);
             String shaderSource = getShaderSource(shaderFile);
 
@@ -22,6 +31,10 @@ public class ShaderLoader {
         } catch (ShaderTypeResolutionFailedException | ShaderSourceRetrievalFailedException | ShaderCreationFailedException e) {
             throw new ShaderLoadFailedException(e);
         }
+    }
+
+    public void unload(IShader shader) {
+        mShaderCreator.destroy(shader);
     }
 
     private ShaderType getShaderType(File shaderFile) throws ShaderTypeResolutionFailedException {
@@ -60,9 +73,5 @@ public class ShaderLoader {
         }
 
         return stringBuilder.toString();
-    }
-
-    public void unload(IShader shader) {
-        mShaderCreator.destroy(shader);
     }
 }

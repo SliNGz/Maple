@@ -49,8 +49,10 @@ public class GameRunner {
             mMapleGame.cleanup();
         } catch (OperationFailedException e) {
             Logger.errorCore("OPERATION_FAILED_EXCEPTION", e.getCause());
+            System.exit(-1);
         } catch (Throwable throwable) {
             Logger.errorCore("UNCAUGHT_EXCEPTION", throwable);
+            System.exit(-1);
         }
     }
 }
