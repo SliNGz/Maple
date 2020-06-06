@@ -14,6 +14,7 @@ import com.maple.graphics.texture.Texture2DBinder;
 import com.maple.graphics.texture.exceptions.NoBoundTextureException;
 import com.maple.log.Logger;
 import com.maple.math.Matrix4f;
+import com.maple.renderer.blending.BlendingController;
 import com.maple.renderer.cull.CullingController;
 import com.maple.renderer.exceptions.RenderingFailedException;
 import com.maple.renderer.mesh.Mesh;
@@ -28,19 +29,22 @@ public class Renderer {
     private EffectBinder mEffectBinder;
     private BufferBinder mBufferBinder;
     private Texture2DBinder mTextureBinder;
+    private BlendingController mBlendingController;
 
     private Effect mEffect;
     private Matrix4f mMVP;
 
     public Renderer(DepthTestController depthTestController, CullingController cullingController,
                     RendererBufferClearer bufferClearer, EffectBinder effectBinder,
-                    BufferBinder bufferBinder, Texture2DBinder textureBinder) {
+                    BufferBinder bufferBinder, Texture2DBinder textureBinder,
+                    BlendingController blendingController) {
         mDepthTestController = depthTestController;
         mCullingController = cullingController;
         mBufferClearer = bufferClearer;
         mEffectBinder = effectBinder;
         mBufferBinder = bufferBinder;
         mTextureBinder = textureBinder;
+        mBlendingController = blendingController;
 
         mEffect = new Effect();
         mMVP = Matrix4f.createIdentity();
@@ -56,6 +60,10 @@ public class Renderer {
 
     public EffectBinder getEffectBinder() {
         return mEffectBinder;
+    }
+
+    public BlendingController getBlendingController() {
+        return mBlendingController;
     }
 
     public void enableClearColorBuffer() {

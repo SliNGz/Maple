@@ -122,7 +122,8 @@ public class Game implements IGame {
         mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
 
         mSpriteRenderer.beginScene(mOrthographicCamera);
-        mSpriteRenderer.render(new Sprite(mTexture).setMaskDimensions(16, 16).setDimensions(16, 16).setMaskPosition(24, 0));
+        mSpriteRenderer.render(new Sprite(mTexture).setMaskDimensions(16, 16).setDimensions(16, 16).setMaskPosition(16, 0));
+        mSpriteRenderer.render(new Sprite(mTexture).setMaskDimensions(16, 16).setDimensions(16, 16).setMaskPosition(32, 0));
         mSpriteRenderer.endScene();
     }
 
