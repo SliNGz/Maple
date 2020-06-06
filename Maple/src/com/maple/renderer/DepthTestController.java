@@ -7,6 +7,10 @@ public class DepthTestController {
         glEnable(GL_DEPTH_TEST);
     }
 
+    public void setFunction(int function) {
+        glDepthFunc(function);
+    }
+
     public boolean isEnabled() {
         return glIsEnabled(GL_DEPTH_TEST);
     }

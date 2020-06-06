@@ -89,6 +89,10 @@ public class Renderer {
         mBufferClearer.setColor(color);
     }
 
+    public void setClearDepth(float depth) {
+        mBufferClearer.setDepth(depth);
+    }
+
     public void clear() {
         mBufferClearer.clear();
     }
