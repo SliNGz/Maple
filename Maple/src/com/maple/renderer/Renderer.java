@@ -6,9 +6,10 @@ import com.maple.graphics.buffer.exceptions.NoBoundIndexBufferException;
 import com.maple.graphics.buffer.exceptions.NoBoundVertexArrayException;
 import com.maple.graphics.buffer.index.IndexBuffer;
 import com.maple.graphics.buffer.vertex.VertexArray;
-import com.maple.graphics.shader.IVertexShader;
+import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
 import com.maple.graphics.shader.effect.EffectBinder;
+import com.maple.graphics.shader.uniform.ShaderUniformController;
 import com.maple.graphics.texture.Texture2D;
 import com.maple.graphics.texture.Texture2DBinder;
 import com.maple.graphics.texture.exceptions.NoBoundTextureException;
@@ -23,6 +24,8 @@ import com.maple.utils.Color;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
+    private static final String UNIFORM_MVP = "u_MVP";
+
     private DepthTestController mDepthTestController;
     private CullingController mCullingController;
     private RendererBufferClearer mBufferClearer;
@@ -144,8 +147,9 @@ public class Renderer {
         try {
             try {
                 mEffectBinder.bind(mEffect);
-                IVertexShader vertexShader = mEffect.getVertexShader();
-                vertexShader.setMVP(mMVP);
+                IShader vertexShader = mEffect.getVertexShader();
+                ShaderUniformController shaderUniformController = vertexShader.getUniformController();
+                shaderUniformController.setMatrix4f(UNIFORM_MVP, mMVP);
 
                 VertexArray vertexArray = mBufferBinder.getBoundVertexArray();
                 try {

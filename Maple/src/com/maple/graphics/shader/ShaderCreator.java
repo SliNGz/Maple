@@ -22,12 +22,7 @@ public class ShaderCreator {
             ShaderProgram program = ShaderProgramCreator.create(nativeShader);
             ShaderUniformController uniformController = new ShaderUniformController(program);
 
-            Shader shader = new Shader(shaderType, program, uniformController);
-            if (shaderType == ShaderType.VERTEX_SHADER) {
-                return new VertexShader(shader);
-            }
-
-            return shader;
+            return new Shader(shaderType, program, uniformController);
         } catch (ShaderCompilationFailedException | ShaderProgramCreationFailedException e) {
             throw new ShaderCreationFailedException(e);
         } finally {
