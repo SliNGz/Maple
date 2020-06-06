@@ -4,6 +4,7 @@ import com.maple.graphics.shader.effect.Effect;
 import com.maple.math.Matrix4f;
 import com.maple.math.Vector2f;
 import com.maple.math.Vector3f;
+import com.maple.renderer.DepthTestController;
 import com.maple.renderer.Renderer;
 import com.maple.renderer.blending.BlendingController;
 import com.maple.renderer.camera.CameraStub;
@@ -15,11 +16,14 @@ import com.maple.renderer.mesh.Mesh;
 import com.maple.renderer.sprite.shader.SpriteFragmentShader;
 import com.maple.renderer.sprite.shader.SpriteVertexShader;
 
+import static org.lwjgl.opengl.GL11.GL_LEQUAL;
+
 public class SpriteRenderer {
     private static final Effect sEffectStub = new Effect();
     private static final ICamera sCameraStub = new CameraStub();
 
     private Renderer mRenderer;
+    private DepthTestController mDepthTestController;
     private CullingController mCullingController;
     private BlendingController mBlendingController;
 
@@ -32,11 +36,13 @@ public class SpriteRenderer {
 
     private boolean mSceneBegun;
 
+    private boolean mWasDepthTestEnabled;
     private boolean mWasCullingEnabled;
     private boolean mWasBlendingEnabled;
 
     public SpriteRenderer(Renderer renderer, SpriteVertexShader vertexShader, SpriteFragmentShader fragmentShader, Mesh quadMesh) {
         mRenderer = renderer;
+        mDepthTestController = mRenderer.getDepthTestController();
         mCullingController = mRenderer.getCullingController();
         mBlendingController = mRenderer.getBlendingController();
 
@@ -58,6 +64,7 @@ public class SpriteRenderer {
         mRenderer.setEffect(mEffect);
         mCamera = camera;
         mRenderer.bindMesh(mQuadMesh);
+        enableDepthTest();
         disableCulling();
         enableBlending();
 
@@ -71,6 +78,7 @@ public class SpriteRenderer {
 
         restoreBlendingState();
         restoreCullingState();
+        restoreDepthTestState();
         mRenderer.unbindTexture();
         mRenderer.unbindMesh();
         mCamera = sCameraStub;
@@ -113,6 +121,14 @@ public class SpriteRenderer {
         mRenderer.render();
     }
 
+    private void enableDepthTest() {
+        mWasDepthTestEnabled = mDepthTestController.isEnabled();
+        mDepthTestController.enable();
+        mDepthTestController.setFunction(GL_LEQUAL);
+        mRenderer.setClearDepth(1.0F);
+        mRenderer.clear();
+    }
+
     private void disableCulling() {
         mWasCullingEnabled = mCullingController.isEnabled();
         mCullingController.disable();
@@ -121,6 +137,14 @@ public class SpriteRenderer {
     private void enableBlending() {
         mWasBlendingEnabled = mBlendingController.isEnabled();
         mBlendingController.enable();
+    }
+
+    private void restoreDepthTestState() {
+        if (mWasDepthTestEnabled) {
+            mDepthTestController.enable();
+        } else {
+            mDepthTestController.disable();
+        }
     }
 
     private void restoreCullingState() {
