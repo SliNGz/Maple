@@ -1,15 +1,12 @@
 package com.maple.renderer.sprite.shader;
 
 import com.maple.graphics.shader.IShader;
-import com.maple.graphics.shader.IVertexShader;
 import com.maple.graphics.shader.ShaderType;
-import com.maple.graphics.shader.VertexShader;
 import com.maple.graphics.shader.program.ShaderProgram;
 import com.maple.graphics.shader.uniform.ShaderUniformController;
-import com.maple.math.Matrix4f;
 import com.maple.math.Vector2f;
 
-public class SpriteVertexShader implements IVertexShader {
+public class SpriteVertexShader implements IShader {
     private static final String UNIFORM_MASK_POSITION = "u_MaskPosition";
     private static final String UNIFORM_MASK_DIMENSIONS = "u_MaskDimensions";
 
@@ -37,10 +34,5 @@ public class SpriteVertexShader implements IVertexShader {
     public void setMask(Vector2f position, Vector2f dimensions) {
         getUniformController().setVector2f(UNIFORM_MASK_POSITION, position);
         getUniformController().setVector2f(UNIFORM_MASK_DIMENSIONS, dimensions);
-    }
-
-    @Override
-    public void setMVP(Matrix4f mvp) {
-        ((VertexShader) mShader).setMVP(mvp);
     }
 }

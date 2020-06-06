@@ -1,78 +1,62 @@
 package com.maple.graphics.shader.uniform;
 
 import com.maple.graphics.shader.program.ShaderProgram;
+import com.maple.graphics.shader.uniform.controllers.*;
 import com.maple.math.Matrix4f;
 import com.maple.math.Vector2f;
 import com.maple.math.Vector4f;
 import com.maple.utils.Color;
-import org.lwjgl.BufferUtils;
 
-import java.nio.FloatBuffer;
-
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL41.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ShaderUniformController {
-    private final ShaderProgram mProgram;
-    private final ShaderUniformLocationMap mUniformLocationMap;
+    private static final IntegerUniformController sIntegerUniformController = new IntegerUniformController();
+    private static final FloatUniformController sFloatUniformController = new FloatUniformController();
+    private static final Vector2fUniformController sVector2fUniformController = new Vector2fUniformController();
+    private static final Vector4fUniformController sVector4fUniformController = new Vector4fUniformController();
+    private static final Matrix4fUniformController sMatrix4fUniformController = new Matrix4fUniformController();
+
+    private ShaderProgram mProgram;
+    private ShaderUniformLocationMap mUniformLocationMap;
+    private Map<String, Object> mCache;
 
     public ShaderUniformController(ShaderProgram program) {
         mProgram = program;
         mUniformLocationMap = new ShaderUniformLocationMap(program);
+        mCache = new HashMap<>();
     }
 
     public int getInt(String name) {
-        return glGetUniformi(mProgram.getHandle(), mUniformLocationMap.get(name));
+        return getUniformValue(name, sIntegerUniformController);
     }
 
     public void setInt(String name, int value) {
-        glProgramUniform1i(mProgram.getHandle(), mUniformLocationMap.get(name), value);
+        setUniformValue(name, value, sIntegerUniformController);
     }
 
     public float getFloat(String name) {
-        return glGetUniformf(mProgram.getHandle(), mUniformLocationMap.get(name));
+        return getUniformValue(name, sFloatUniformController);
     }
 
     public void setFloat(String name, float value) {
-        glProgramUniform1f(mProgram.getHandle(), mUniformLocationMap.get(name), value);
-    }
-
-    public Matrix4f getMatrix4f(String name) {
-        Matrix4f matrix = new Matrix4f();
-        FloatBuffer elements = matrix.getElements();
-        glGetUniformfv(mProgram.getHandle(), mUniformLocationMap.get(name), elements);
-        elements.rewind();
-
-        return matrix;
-    }
-
-    public void setMatrix4f(String name, Matrix4f value) {
-        FloatBuffer elements = value.getElements();
-        elements.rewind();
-        glProgramUniformMatrix4fv(mProgram.getHandle(), mUniformLocationMap.get(name), false, elements);
-        elements.rewind();
+        setUniformValue(name, value, sFloatUniformController);
     }
 
     public Vector2f getVector2f(String name) {
-        FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(2);
-        glGetUniformfv(mProgram.getHandle(), mUniformLocationMap.get(name), floatBuffer);
-
-        return new Vector2f(floatBuffer.get(0), floatBuffer.get(1));
+        return getUniformValue(name, sVector2fUniformController);
     }
 
     public void setVector2f(String name, Vector2f value) {
-        glProgramUniform2f(mProgram.getHandle(), mUniformLocationMap.get(name), value.X, value.Y);
+        setUniformValue(name, new Vector2f(value), sVector2fUniformController);
     }
 
     public Vector4f getVector4f(String name) {
-        FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(4);
-        glGetUniformfv(mProgram.getHandle(), mUniformLocationMap.get(name), floatBuffer);
-
-        return new Vector4f(floatBuffer.get(0), floatBuffer.get(1), floatBuffer.get(2), floatBuffer.get(3));
+        return getUniformValue(name, sVector4fUniformController);
     }
 
     public void setVector4f(String name, Vector4f value) {
-        glProgramUniform4f(mProgram.getHandle(), mUniformLocationMap.get(name), value.X, value.Y, value.Z, value.W);
+        setUniformValue(name, new Vector4f(value), sVector4fUniformController);
     }
 
     public Color getColor(String name) {
@@ -83,5 +67,33 @@ public class ShaderUniformController {
 
     public void setColor(String name, Color color) {
         setVector4f(name, color.toVector4f());
+    }
+
+    public Matrix4f getMatrix4f(String name) {
+        return getUniformValue(name, sMatrix4fUniformController);
+    }
+
+    public void setMatrix4f(String name, Matrix4f value) {
+        setUniformValue(name, new Matrix4f(value), sMatrix4fUniformController);
+    }
+
+    private <T> T getUniformValue(String name, IUniformController<T> uniformController) {
+        Object cachedUniformValue = mCache.get(name);
+        if (cachedUniformValue == null) {
+            T value = uniformController.get(mProgram.getHandle(), mUniformLocationMap.get(name));
+            mCache.put(name, value);
+
+            return value;
+        }
+
+        return (T) cachedUniformValue;
+    }
+
+    private <T> void setUniformValue(String name, T value, IUniformController<T> uniformController) {
+        Object cachedUniformValue = mCache.get(name);
+        if (!value.equals(cachedUniformValue)) {
+            uniformController.set(mProgram.getHandle(), mUniformLocationMap.get(name), value);
+            mCache.put(name, value);
+        }
     }
 }

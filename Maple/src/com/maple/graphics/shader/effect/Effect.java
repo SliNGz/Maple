@@ -1,7 +1,6 @@
 package com.maple.graphics.shader.effect;
 
 import com.maple.graphics.shader.IShader;
-import com.maple.graphics.shader.IVertexShader;
 import com.maple.graphics.shader.ShaderType;
 import com.maple.graphics.shader.exceptions.ShaderNotSetException;
 
@@ -10,7 +9,7 @@ import java.util.Map;
 
 public class Effect {
     private Map<ShaderType, IShader> mShaders;
-    private IVertexShader mVertexShader;
+    private IShader mVertexShader;
     private IShader mFragmentShader;
     private IShader mGeometryShader;
 
@@ -34,7 +33,7 @@ public class Effect {
 
     private void updateShaderCache(ShaderType shaderType, IShader shader) {
         if (shaderType.equals(ShaderType.VERTEX_SHADER)) {
-            mVertexShader = (IVertexShader) shader;
+            mVertexShader = shader;
         } else if (shaderType.equals(ShaderType.FRAGMENT_SHADER)) {
             mFragmentShader = shader;
         } else if (shaderType.equals(ShaderType.GEOMETRY_SHADER)) {
@@ -53,7 +52,7 @@ public class Effect {
         return shader;
     }
 
-    public IVertexShader getVertexShader() throws ShaderNotSetException {
+    public IShader getVertexShader() throws ShaderNotSetException {
         if (mVertexShader == null) {
             throw new ShaderNotSetException();
         }
