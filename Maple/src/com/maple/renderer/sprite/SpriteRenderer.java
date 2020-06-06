@@ -5,6 +5,7 @@ import com.maple.math.Matrix4f;
 import com.maple.math.Vector2f;
 import com.maple.math.Vector3f;
 import com.maple.renderer.Renderer;
+import com.maple.renderer.blending.BlendingController;
 import com.maple.renderer.camera.CameraStub;
 import com.maple.renderer.camera.ICamera;
 import com.maple.renderer.cull.CullingController;
@@ -20,6 +21,7 @@ public class SpriteRenderer {
 
     private Renderer mRenderer;
     private CullingController mCullingController;
+    private BlendingController mBlendingController;
 
     private Effect mEffect;
     private SpriteVertexShader mVertexShader;
@@ -30,9 +32,13 @@ public class SpriteRenderer {
 
     private boolean mSceneBegun;
 
+    private boolean mWasCullingEnabled;
+    private boolean mWasBlendingEnabled;
+
     public SpriteRenderer(Renderer renderer, SpriteVertexShader vertexShader, SpriteFragmentShader fragmentShader, Mesh quadMesh) {
         mRenderer = renderer;
         mCullingController = mRenderer.getCullingController();
+        mBlendingController = mRenderer.getBlendingController();
 
         mEffect = new Effect(vertexShader, fragmentShader);
         mVertexShader = vertexShader;
@@ -52,7 +58,8 @@ public class SpriteRenderer {
         mRenderer.setEffect(mEffect);
         mCamera = camera;
         mRenderer.bindMesh(mQuadMesh);
-        mCullingController.disable();
+        disableCulling();
+        enableBlending();
 
         mSceneBegun = true;
     }
@@ -62,8 +69,9 @@ public class SpriteRenderer {
             throw new SceneHasNotBegunException();
         }
 
+        restoreBlendingState();
+        restoreCullingState();
         mRenderer.unbindTexture();
-        mCullingController.enable();
         mRenderer.unbindMesh();
         mCamera = sCameraStub;
         mRenderer.setEffect(sEffectStub);
@@ -103,5 +111,31 @@ public class SpriteRenderer {
         mVertexShader.setMask(sprite.getMaskPosition(), sprite.getMaskDimensions());
         mFragmentShader.setColor(sprite.getColor());
         mRenderer.render();
+    }
+
+    private void disableCulling() {
+        mWasCullingEnabled = mCullingController.isEnabled();
+        mCullingController.disable();
+    }
+
+    private void enableBlending() {
+        mWasBlendingEnabled = mBlendingController.isEnabled();
+        mBlendingController.enable();
+    }
+
+    private void restoreCullingState() {
+        if (mWasCullingEnabled) {
+            mCullingController.enable();
+        } else {
+            mCullingController.disable();
+        }
+    }
+
+    private void restoreBlendingState() {
+        if (mWasBlendingEnabled) {
+            mBlendingController.enable();
+        } else {
+            mBlendingController.disable();
+        }
     }
 }
