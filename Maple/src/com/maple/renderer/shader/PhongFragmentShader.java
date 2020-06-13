@@ -11,6 +11,7 @@ public class PhongFragmentShader implements IShader {
     private static final String UNIFORM_CAMERA_POSITION = "u_CameraPosition";
     private static final String UNIFORM_LIGHT_POSITION = "u_LightPosition";
     private static final String UNIFORM_LIGHT_COLOR = "u_LightColor";
+    private static final String UNIFORM_LIGHT_ATTENUATION_INTENSITY = "u_LightAttenuationIntensity";
     private static final String UNIFORM_AMBIENT_INTENSITY = "u_AmbientIntensity";
 
     private IShader mShader;
@@ -44,6 +45,10 @@ public class PhongFragmentShader implements IShader {
 
     public void setLightColor(Color lightColor) {
         getUniformController().setColor(UNIFORM_LIGHT_COLOR, lightColor);
+    }
+
+    public void setLightAttenuationIntensity(float lightAttenuationIntensity) {
+        getUniformController().setFloat(UNIFORM_LIGHT_ATTENUATION_INTENSITY, lightAttenuationIntensity);
     }
 
     public void setAmbientIntensity(float ambientIntensity) {
