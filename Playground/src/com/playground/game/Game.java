@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.ARBFramebufferSRGB.GL_FRAMEBUFFER_SRGB;
+import static org.lwjgl.opengl.GL11.glEnable;
 
 public class Game implements IGame {
     private GraphicsManager mGraphicsManager;
@@ -72,7 +74,7 @@ public class Game implements IGame {
 
     int[][] mMap;
 
-    Vector3f mLightPosition = new Vector3f(20, 20, 20);
+    Vector3f mLightPosition = new Vector3f(-10, -10, -10);
     Color mLightColor = new Color(255, 255, 255);
 
     public Game(GameContext context) {
@@ -95,7 +97,8 @@ public class Game implements IGame {
         mEffect = new Effect(mVertexShader, mFragmentShader);
 
         mPerspectiveCamera = new PerspectiveCamera(45, mWindow.getAspectRatio(), 0.01F, 1000);
-        mPerspectiveCamera.setPosition(new Vector3f(0, 10, 0));
+        mPerspectiveCamera.setPosition(new Vector3f(40, 40, 40));
+        mPerspectiveCamera.addRotation(new Vector3f(MathHelper.toRadians(-30), MathHelper.toRadians(45), 0));
         mMousePositionCallbackDispatcher.addDisabledCursorCallback(new PerspectiveCameraController(mPerspectiveCamera, 2.5F));
 
         initializeKeyBindings();
@@ -197,7 +200,8 @@ public class Game implements IGame {
 //
 //        mOrthographicCamera.setRoll(mOrthographicCamera.getRoll() + 0.007F);
 
-//        Logger.infoCore("Light Position: " + lightPosition);
+        mLightPosition.add(new Vector3f(0.1F, 0.1F, 0.1F));
+        Logger.infoCore("Light Position: " + mLightPosition);
     }
 
     @Override
@@ -207,7 +211,8 @@ public class Game implements IGame {
         mFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
         mFragmentShader.setLightPosition(mLightPosition);
         mFragmentShader.setLightColor(mLightColor);
-        mFragmentShader.setAmbientIntensity(0.3F);
+        mFragmentShader.setLightAttenuationIntensity(0.001F);
+        mFragmentShader.setAmbientIntensity(0.07F);
 
         mRenderer.setEffect(mEffect);
         mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
