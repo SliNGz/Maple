@@ -6,6 +6,7 @@ import com.maple.math.Vector2f;
 import com.maple.math.Vector3f;
 import com.maple.renderer.DepthTestController;
 import com.maple.renderer.Renderer;
+import com.maple.renderer.RendererBufferClearer;
 import com.maple.renderer.blending.BlendingController;
 import com.maple.renderer.camera.CameraStub;
 import com.maple.renderer.camera.ICamera;
@@ -17,6 +18,7 @@ import com.maple.renderer.sprite.shader.SpriteFragmentShader;
 import com.maple.renderer.sprite.shader.SpriteVertexShader;
 
 import static org.lwjgl.opengl.GL11.GL_LEQUAL;
+import static org.lwjgl.opengl.GL11.GL_LESS;
 
 public class SpriteRenderer {
     private static final Effect sEffectStub = new Effect();
@@ -25,6 +27,7 @@ public class SpriteRenderer {
     private Renderer mRenderer;
     private DepthTestController mDepthTestController;
     private CullingController mCullingController;
+    private RendererBufferClearer mBufferClearer;
     private BlendingController mBlendingController;
 
     private Effect mEffect;
@@ -44,6 +47,7 @@ public class SpriteRenderer {
         mRenderer = renderer;
         mDepthTestController = mRenderer.getDepthTestController();
         mCullingController = mRenderer.getCullingController();
+        mBufferClearer = mRenderer.getBufferClearer();
         mBlendingController = mRenderer.getBlendingController();
 
         mEffect = new Effect(vertexShader, fragmentShader);
@@ -109,13 +113,9 @@ public class SpriteRenderer {
         Matrix4f rotationCenterMatrix = Matrix4f.createTranslation(Vector3f.negate(spriteCenter));
         Matrix4f rotationMatrix = Matrix4f.createRotationZ(-roll);
         Matrix4f translationMatrix = Matrix4f.createTranslation(position);
-        Matrix4f viewProjectionMatrix = mCamera.getViewProjectionMatrix();
-        Matrix4f mvp = Matrix4f.multiply(viewProjectionMatrix,
-                                         translationMatrix,
-                                         rotationMatrix,
-                                         rotationCenterMatrix,
-                                         scaleMatrix);
-        mRenderer.setMVP(mvp);
+        Matrix4f modelMatrix = Matrix4f.multiply(translationMatrix, rotationMatrix, rotationCenterMatrix, scaleMatrix);
+        mRenderer.setViewProjectionMatrix(mCamera.getViewProjectionMatrix());
+        mRenderer.setModelMatrix(modelMatrix);
         mVertexShader.setMask(sprite.getMaskPosition(), sprite.getMaskDimensions());
         mFragmentShader.setColor(sprite.getColor());
         mRenderer.render();
@@ -125,8 +125,10 @@ public class SpriteRenderer {
         mWasDepthTestEnabled = mDepthTestController.isEnabled();
         mDepthTestController.enable();
         mDepthTestController.setFunction(GL_LEQUAL);
-        mRenderer.setClearDepth(1.0F);
-        mRenderer.clear();
+        mBufferClearer.setDepth(1.0F);
+        mBufferClearer.disableColorBufferBit();
+        mBufferClearer.enableDepthBufferBit();
+        mBufferClearer.clear();
     }
 
     private void disableCulling() {
@@ -140,6 +142,9 @@ public class SpriteRenderer {
     }
 
     private void restoreDepthTestState() {
+        mBufferClearer.enableColorBufferBit();
+        mBufferClearer.enableDepthBufferBit();
+        mDepthTestController.setFunction(GL_LESS);
         if (mWasDepthTestEnabled) {
             mDepthTestController.enable();
         } else {

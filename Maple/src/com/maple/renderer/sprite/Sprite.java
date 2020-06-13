@@ -74,6 +74,14 @@ public class Sprite {
         return mDimensions;
     }
 
+    public float getWidth() {
+        return mDimensions.X;
+    }
+
+    public float getHeight() {
+        return mDimensions.Y;
+    }
+
     public Sprite setDimensions(int width, int height) {
         mDimensions.X = MathHelper.clamp(width, 0, Integer.MAX_VALUE);
         mDimensions.Y = MathHelper.clamp(height, 0, Integer.MAX_VALUE);

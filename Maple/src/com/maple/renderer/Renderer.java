@@ -24,7 +24,8 @@ import com.maple.utils.Color;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
-    private static final String UNIFORM_MVP = "u_MVP";
+    private static final String UNIFORM_VIEW_PROJECTION = "u_ViewProjection";
+    private static final String UNIFORM_MODEL = "u_Model";
 
     private DepthTestController mDepthTestController;
     private CullingController mCullingController;
@@ -35,7 +36,9 @@ public class Renderer {
     private BlendingController mBlendingController;
 
     private Effect mEffect;
-    private Matrix4f mMVP;
+
+    private Matrix4f mViewProjectionMatrix;
+    private Matrix4f mModelMatrix;
 
     public Renderer(DepthTestController depthTestController, CullingController cullingController,
                     RendererBufferClearer bufferClearer, EffectBinder effectBinder,
@@ -50,7 +53,9 @@ public class Renderer {
         mBlendingController = blendingController;
 
         mEffect = new Effect();
-        mMVP = Matrix4f.createIdentity();
+
+        mViewProjectionMatrix = Matrix4f.createIdentity();
+        mModelMatrix = Matrix4f.createIdentity();
     }
 
     public DepthTestController getDepthTestController() {
@@ -59,6 +64,10 @@ public class Renderer {
 
     public CullingController getCullingController() {
         return mCullingController;
+    }
+
+    public RendererBufferClearer getBufferClearer() {
+        return mBufferClearer;
     }
 
     public EffectBinder getEffectBinder() {
@@ -105,8 +114,12 @@ public class Renderer {
         mEffect = effect;
     }
 
-    public void setMVP(Matrix4f mvp) {
-        mMVP = mvp;
+    public void setViewProjectionMatrix(Matrix4f viewProjectionMatrix) {
+        mViewProjectionMatrix = viewProjectionMatrix;
+    }
+
+    public void setModelMatrix(Matrix4f modelMatrix) {
+        mModelMatrix = modelMatrix;
     }
 
     public void bindVertexArray(VertexArray vertexArray) {
@@ -153,7 +166,8 @@ public class Renderer {
                 mEffectBinder.bind(mEffect);
                 IShader vertexShader = mEffect.getVertexShader();
                 ShaderUniformController shaderUniformController = vertexShader.getUniformController();
-                shaderUniformController.setMatrix4f(UNIFORM_MVP, mMVP);
+                shaderUniformController.setMatrix4f(UNIFORM_VIEW_PROJECTION, mViewProjectionMatrix);
+                shaderUniformController.setMatrix4f(UNIFORM_MODEL, mModelMatrix);
 
                 VertexArray vertexArray = mBufferBinder.getBoundVertexArray();
                 try {
