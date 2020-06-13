@@ -13,6 +13,7 @@ import com.maple.renderer.camera.ICamera;
 import com.maple.renderer.cull.CullingController;
 import com.maple.renderer.exceptions.SceneAlreadyBegunException;
 import com.maple.renderer.exceptions.SceneHasNotBegunException;
+import com.maple.renderer.gamma.GammaCorrectionController;
 import com.maple.renderer.mesh.Mesh;
 import com.maple.renderer.sprite.shader.SpriteFragmentShader;
 import com.maple.renderer.sprite.shader.SpriteVertexShader;
@@ -29,6 +30,7 @@ public class SpriteRenderer {
     private CullingController mCullingController;
     private RendererBufferClearer mBufferClearer;
     private BlendingController mBlendingController;
+    private GammaCorrectionController mGammaCorrectionController;
 
     private Effect mEffect;
     private SpriteVertexShader mVertexShader;
@@ -42,6 +44,7 @@ public class SpriteRenderer {
     private boolean mWasDepthTestEnabled;
     private boolean mWasCullingEnabled;
     private boolean mWasBlendingEnabled;
+    private boolean mWasGammaCorrectionEnabled;
 
     public SpriteRenderer(Renderer renderer, SpriteVertexShader vertexShader, SpriteFragmentShader fragmentShader, Mesh quadMesh) {
         mRenderer = renderer;
@@ -49,6 +52,7 @@ public class SpriteRenderer {
         mCullingController = mRenderer.getCullingController();
         mBufferClearer = mRenderer.getBufferClearer();
         mBlendingController = mRenderer.getBlendingController();
+        mGammaCorrectionController = mRenderer.getGammaCorrectionController();
 
         mEffect = new Effect(vertexShader, fragmentShader);
         mVertexShader = vertexShader;
@@ -71,6 +75,7 @@ public class SpriteRenderer {
         enableDepthTest();
         disableCulling();
         enableBlending();
+        disableGammaCorrection();
 
         mSceneBegun = true;
     }
@@ -80,6 +85,7 @@ public class SpriteRenderer {
             throw new SceneHasNotBegunException();
         }
 
+        restoreGammaCorrectionState();
         restoreBlendingState();
         restoreCullingState();
         restoreDepthTestState();
@@ -141,6 +147,11 @@ public class SpriteRenderer {
         mBlendingController.enable();
     }
 
+    private void disableGammaCorrection() {
+        mWasGammaCorrectionEnabled = mGammaCorrectionController.isEnabled();
+        mGammaCorrectionController.disable();
+    }
+
     private void restoreDepthTestState() {
         mBufferClearer.enableColorBufferBit();
         mBufferClearer.enableDepthBufferBit();
@@ -165,6 +176,14 @@ public class SpriteRenderer {
             mBlendingController.enable();
         } else {
             mBlendingController.disable();
+        }
+    }
+
+    private void restoreGammaCorrectionState() {
+        if (mWasGammaCorrectionEnabled) {
+            mGammaCorrectionController.enable();
+        } else {
+            mGammaCorrectionController.disable();
         }
     }
 }
