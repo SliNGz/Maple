@@ -18,6 +18,7 @@ import com.maple.math.Matrix4f;
 import com.maple.renderer.blending.BlendingController;
 import com.maple.renderer.cull.CullingController;
 import com.maple.renderer.exceptions.RenderingFailedException;
+import com.maple.renderer.gamma.GammaCorrectionController;
 import com.maple.renderer.mesh.Mesh;
 import com.maple.utils.Color;
 
@@ -34,6 +35,7 @@ public class Renderer {
     private BufferBinder mBufferBinder;
     private Texture2DBinder mTextureBinder;
     private BlendingController mBlendingController;
+    private GammaCorrectionController mGammaCorrectionController;
 
     private Effect mEffect;
 
@@ -43,7 +45,8 @@ public class Renderer {
     public Renderer(DepthTestController depthTestController, CullingController cullingController,
                     RendererBufferClearer bufferClearer, EffectBinder effectBinder,
                     BufferBinder bufferBinder, Texture2DBinder textureBinder,
-                    BlendingController blendingController) {
+                    BlendingController blendingController,
+                    GammaCorrectionController gammaCorrectionController) {
         mDepthTestController = depthTestController;
         mCullingController = cullingController;
         mBufferClearer = bufferClearer;
@@ -51,6 +54,7 @@ public class Renderer {
         mBufferBinder = bufferBinder;
         mTextureBinder = textureBinder;
         mBlendingController = blendingController;
+        mGammaCorrectionController = gammaCorrectionController;
 
         mEffect = new Effect();
 
@@ -76,6 +80,10 @@ public class Renderer {
 
     public BlendingController getBlendingController() {
         return mBlendingController;
+    }
+
+    public GammaCorrectionController getGammaCorrectionController() {
+        return mGammaCorrectionController;
     }
 
     public void enableClearColorBuffer() {
@@ -108,6 +116,14 @@ public class Renderer {
 
     public void clear(Color color) {
         mBufferClearer.clear(color);
+    }
+
+    public void enableGammaCorrection() {
+        mGammaCorrectionController.enable();
+    }
+
+    public void disableGammaCorrection() {
+        mGammaCorrectionController.disable();
     }
 
     public void setEffect(Effect effect) {
