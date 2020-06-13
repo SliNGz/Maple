@@ -4,6 +4,7 @@ import com.maple.graphics.shader.program.ShaderProgram;
 import com.maple.graphics.shader.uniform.controllers.*;
 import com.maple.math.Matrix4f;
 import com.maple.math.Vector2f;
+import com.maple.math.Vector3f;
 import com.maple.math.Vector4f;
 import com.maple.utils.Color;
 
@@ -14,6 +15,7 @@ public class ShaderUniformController {
     private static final IntegerUniformController sIntegerUniformController = new IntegerUniformController();
     private static final FloatUniformController sFloatUniformController = new FloatUniformController();
     private static final Vector2fUniformController sVector2fUniformController = new Vector2fUniformController();
+    private static final Vector3fUniformController sVector3fUniformController = new Vector3fUniformController();
     private static final Vector4fUniformController sVector4fUniformController = new Vector4fUniformController();
     private static final Matrix4fUniformController sMatrix4fUniformController = new Matrix4fUniformController();
 
@@ -49,6 +51,14 @@ public class ShaderUniformController {
 
     public void setVector2f(String name, Vector2f value) {
         setUniformValue(name, new Vector2f(value), sVector2fUniformController);
+    }
+
+    public Vector3f getVector3f(String name) {
+        return getUniformValue(name, sVector3fUniformController);
+    }
+
+    public void setVector3f(String name, Vector3f value) {
+        setUniformValue(name, new Vector3f(value), sVector3fUniformController);
     }
 
     public Vector4f getVector4f(String name) {

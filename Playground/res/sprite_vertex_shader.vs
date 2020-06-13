@@ -9,7 +9,8 @@ out gl_PerVertex
 };
 out vec2 out_TexCoords;
 
-uniform mat4 u_MVP;
+uniform mat4 u_ViewProjection;
+uniform mat4 u_Model;
 
 uniform vec2 u_MaskPosition;
 uniform vec2 u_MaskDimensions;
@@ -18,6 +19,6 @@ void main()
 {
 	vec2 tex_coords = u_MaskPosition + u_MaskDimensions * in_TexCoords;
 
-	gl_Position = u_MVP * in_Position;
+	gl_Position = u_ViewProjection * u_Model * in_Position;
 	out_TexCoords = tex_coords;
 };
