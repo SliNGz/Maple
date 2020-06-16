@@ -6,6 +6,8 @@ import com.maple.graphics.buffer.exceptions.NoBoundIndexBufferException;
 import com.maple.graphics.buffer.exceptions.NoBoundVertexArrayException;
 import com.maple.graphics.buffer.index.IndexBuffer;
 import com.maple.graphics.buffer.vertex.VertexArray;
+import com.maple.graphics.framebuffer.Framebuffer;
+import com.maple.graphics.framebuffer.FramebufferBinder;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
 import com.maple.graphics.shader.effect.EffectBinder;
@@ -34,6 +36,7 @@ public class Renderer {
     private BufferBinder mBufferBinder;
     private Texture2DBinder mTextureBinder;
     private BlendingController mBlendingController;
+    private FramebufferBinder mFramebufferBinder;
 
     private Effect mEffect;
 
@@ -43,7 +46,8 @@ public class Renderer {
     public Renderer(DepthTestController depthTestController, CullingController cullingController,
                     RendererBufferClearer bufferClearer, EffectBinder effectBinder,
                     BufferBinder bufferBinder, Texture2DBinder textureBinder,
-                    BlendingController blendingController) {
+                    BlendingController blendingController,
+                    FramebufferBinder framebufferBinder) {
         mDepthTestController = depthTestController;
         mCullingController = cullingController;
         mBufferClearer = bufferClearer;
@@ -51,6 +55,7 @@ public class Renderer {
         mBufferBinder = bufferBinder;
         mTextureBinder = textureBinder;
         mBlendingController = blendingController;
+        mFramebufferBinder = framebufferBinder;
 
         mEffect = new Effect();
 
@@ -158,6 +163,14 @@ public class Renderer {
 
     public Texture2D getBoundTexture() throws NoBoundTextureException {
         return mTextureBinder.getBoundTexture();
+    }
+
+    public void bindFramebuffer(Framebuffer framebuffer) {
+        mFramebufferBinder.bind(framebuffer);
+    }
+
+    public void unbindFramebuffer() {
+        mFramebufferBinder.unbind();
     }
 
     public void render() {

@@ -2,8 +2,7 @@ package com.maple.content.loaders;
 
 import com.maple.content.IContentLoader;
 import com.maple.content.exceptions.Texture2DLoadFailedException;
-import com.maple.graphics.texture.Texture2D;
-import com.maple.graphics.texture.Texture2DCreator;
+import com.maple.graphics.texture.*;
 import com.maple.graphics.texture.exceptions.STBImageLoadFailedException;
 import com.maple.graphics.texture.exceptions.Texture2DFormatNotSupported;
 import org.lwjgl.BufferUtils;
@@ -12,7 +11,6 @@ import org.lwjgl.stb.STBImage;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBImage.*;
 
 public class Texture2DLoader implements IContentLoader<Texture2D> {
@@ -37,25 +35,25 @@ public class Texture2DLoader implements IContentLoader<Texture2D> {
             int height = heightBuffer.get();
             int channels = channelsBuffer.get();
 
-            int internalFormat = 0;
-            int dataFormat = 0;
+            TextureInternalFormat internalFormat;
+            TexelDataFormat dataFormat;
 
             switch (channels) {
                 case STBI_rgb:
-                    internalFormat = GL_RGB8;
-                    dataFormat = GL_RGB;
+                    internalFormat = TextureInternalFormat.RGB8;
+                    dataFormat = TexelDataFormat.RGB;
                     break;
 
                 case STBI_rgb_alpha:
-                    internalFormat = GL_RGBA8;
-                    dataFormat = GL_RGBA;
+                    internalFormat = TextureInternalFormat.RGBA8;
+                    dataFormat = TexelDataFormat.RGBA;
                     break;
 
                 default:
                     throw new Texture2DFormatNotSupported();
             }
 
-            return mTexture2DCreator.create(width, height, internalFormat, dataFormat, data);
+            return mTexture2DCreator.create(width, height, internalFormat, dataFormat, TexelDataType.UNSIGNED_BYTE, data);
         } catch (Throwable throwable) {
             throw new Texture2DLoadFailedException(throwable);
         }

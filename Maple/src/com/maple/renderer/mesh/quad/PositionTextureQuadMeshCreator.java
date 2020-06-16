@@ -28,10 +28,10 @@ public class PositionTextureQuadMeshCreator {
 
     public Mesh create() {
         List<VertexPositionTexture> vertices = List.of(
-                new VertexPositionTexture(new Vector3f(0, 1, 0), new Vector2f(0, 0)),
-                new VertexPositionTexture(new Vector3f(1, 1, 0), new Vector2f(1, 0)),
-                new VertexPositionTexture(new Vector3f(1, 0, 0), new Vector2f(1, 1)),
-                new VertexPositionTexture(new Vector3f(0, 0, 0), new Vector2f(0, 1)));
+                new VertexPositionTexture(new Vector3f(0, 0, 0), new Vector2f(0, 0)),
+                new VertexPositionTexture(new Vector3f(0, 1, 0), new Vector2f(0, 1)),
+                new VertexPositionTexture(new Vector3f(1, 1, 0), new Vector2f(1, 1)),
+                new VertexPositionTexture(new Vector3f(1, 0, 0), new Vector2f(1, 0)));
         VertexBuffer vertexBuffer = mVertexBufferCreator.create(vertices, BufferUsage.STATIC_DRAW);
 
         VertexArray vertexArray = mVertexArrayCreator.create(vertexBuffer);

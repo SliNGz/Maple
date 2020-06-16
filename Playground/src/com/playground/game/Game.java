@@ -14,9 +14,14 @@ import com.maple.graphics.buffer.vertex.VertexArrayCreator;
 import com.maple.graphics.buffer.vertex.VertexBuffer;
 import com.maple.graphics.buffer.vertex.VertexBufferCreator;
 import com.maple.graphics.buffer.vertex.specification.VertexPositionColorNormal;
+import com.maple.graphics.framebuffer.Framebuffer;
+import com.maple.graphics.framebuffer.FramebufferCreator;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
+import com.maple.graphics.texture.TexelDataFormat;
+import com.maple.graphics.texture.TexelDataType;
 import com.maple.graphics.texture.Texture2D;
+import com.maple.graphics.texture.TextureInternalFormat;
 import com.maple.graphics.window.Window;
 import com.maple.input.keyboard.IKeyAction;
 import com.maple.input.keyboard.Key;
@@ -35,6 +40,7 @@ import com.maple.renderer.mesh.terrain.ITerrainColorizer;
 import com.maple.renderer.mesh.terrain.TerrainColorBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.renderer.shader.PhongFragmentShader;
+import com.maple.renderer.sprite.Sprite;
 import com.maple.renderer.sprite.SpriteRenderer;
 import com.maple.utils.Color;
 import com.maple.world.terrain.Terrain;
@@ -45,8 +51,6 @@ import java.util.List;
 import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.ARBFramebufferSRGB.GL_FRAMEBUFFER_SRGB;
-import static org.lwjgl.opengl.GL11.glEnable;
 
 public class Game implements IGame {
     private GraphicsManager mGraphicsManager;
@@ -72,10 +76,12 @@ public class Game implements IGame {
 
     private Mesh mCubeMesh;
 
-    int[][] mMap;
+    private int[][] mMap;
 
-    Vector3f mLightPosition = new Vector3f(-10, -10, -10);
-    Color mLightColor = new Color(255, 255, 255);
+    private Vector3f mLightPosition = new Vector3f(-10, -10, -10);
+    private Color mLightColor = new Color(255, 255, 255);
+
+    private Framebuffer mFramebuffer;
 
     public Game(GameContext context) {
         mGraphicsManager = context.getGraphicsManager();
@@ -186,7 +192,12 @@ public class Game implements IGame {
         IndexBuffer cubeIndexBuffer = indexBufferCreator.create(indices, BufferUsage.STATIC_DRAW);
 
         mCubeMesh = new Mesh(cubeVertexArray, cubeIndexBuffer);
+
+        FramebufferCreator framebufferCreator = mGraphicsManager.getFramebufferCreator();
+        mFramebuffer = framebufferCreator.create(mWindow.getWidth(), mWindow.getHeight(),
+                                                 TextureInternalFormat.RGB, TexelDataFormat.RGB, TexelDataType.UNSIGNED_BYTE);
     }
+
 
     @Override
     public void update(GameTime gameTime) {
@@ -201,13 +212,12 @@ public class Game implements IGame {
 //        mOrthographicCamera.setRoll(mOrthographicCamera.getRoll() + 0.007F);
 
         mLightPosition.add(new Vector3f(0.1F, 0.1F, 0.1F));
-        Logger.infoCore("Light Position: " + mLightPosition);
     }
 
     @Override
     public void render(float alpha) {
+        mRenderer.bindFramebuffer(mFramebuffer);
         mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
-
         mFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
         mFragmentShader.setLightPosition(mLightPosition);
         mFragmentShader.setLightColor(mLightColor);
@@ -219,6 +229,12 @@ public class Game implements IGame {
         mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-10, -10, -10)), Matrix4f.createScale(20)));
         mRenderer.bindMesh(mCubeMesh);
         mRenderer.render();
+
+        mRenderer.unbindFramebuffer();
+
+        mSpriteRenderer.beginScene(mOrthographicCamera);
+        mSpriteRenderer.render(new Sprite(mFramebuffer.getTexture()));
+        mSpriteRenderer.endScene();
     }
 
     @Override
@@ -237,8 +253,6 @@ public class Game implements IGame {
                 Vector3f vector3f = Vector3f.createLookAt(mPerspectiveCamera.getRotation().X, mPerspectiveCamera.getRotation().Y);
                 vector3f.normalize();
                 mPerspectiveCamera.addPosition(vector3f);
-
-                mOrthographicCamera.setScale(mOrthographicCamera.getScale() - 0.01F);
             }
 
             @Override
@@ -252,8 +266,6 @@ public class Game implements IGame {
                                                           mPerspectiveCamera.getRotation().Y - MathHelper.PI / 2);
                 vector3f.normalize();
                 mPerspectiveCamera.addPosition(vector3f);
-
-                mOrthographicCamera.setScale(1.0F);
             }
 
             @Override
@@ -268,8 +280,6 @@ public class Game implements IGame {
                 vector3f.negate();
                 vector3f.normalize();
                 mPerspectiveCamera.addPosition(vector3f);
-
-                mOrthographicCamera.setScale(mOrthographicCamera.getScale() + 0.01F);
             }
 
             @Override

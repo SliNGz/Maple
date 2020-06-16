@@ -1,6 +1,7 @@
 package com.maple.renderer;
 
 import com.maple.graphics.buffer.BufferBinder;
+import com.maple.graphics.framebuffer.FramebufferBinder;
 import com.maple.graphics.shader.binder.ShaderBinder;
 import com.maple.graphics.shader.binder.ShaderBinderCreator;
 import com.maple.graphics.shader.effect.EffectBinder;
@@ -32,6 +33,8 @@ public class RendererCreator {
 
         BlendingController blendingController = new BlendingController();
 
+        FramebufferBinder framebufferBinder = new FramebufferBinder();
+
         depthTestController.enable();
         cullingController.enable();
         cullingController.setFaceCulling(CullingFace.BACK);
@@ -41,7 +44,7 @@ public class RendererCreator {
         bufferClearer.enableDepthBufferBit();
 
         return new Renderer(depthTestController, cullingController, bufferClearer, effectBinder, bufferBinder,
-                            textureBinder, blendingController);
+                            textureBinder, blendingController, framebufferBinder);
     }
 
     public void destroy(Renderer renderer) {

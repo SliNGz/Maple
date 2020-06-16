@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.lwjgl.stb.STBImage.stbi_set_flip_vertically_on_load;
+
 public class ContentLoader {
     private File mContentFolder;
     private Map<Class<?>, IContentLoader<?>> mContentLoaders;
@@ -65,6 +67,7 @@ public class ContentLoader {
     }
 
     private IContentLoader<Texture2D> createTexture2DContentLoader() {
+        stbi_set_flip_vertically_on_load(true);
         Texture2DCreator texture2DCreator = new Texture2DCreator();
 
         return new Texture2DLoader(texture2DCreator);
