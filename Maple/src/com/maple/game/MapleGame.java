@@ -13,9 +13,12 @@ import com.maple.graphics.exceptions.GLFWInitializationFailedException;
 import com.maple.graphics.exceptions.MonitorRetrievalFailedException;
 import com.maple.graphics.exceptions.VideoModeRetrievalFailedException;
 import com.maple.graphics.exceptions.WindowCreationFailedException;
+import com.maple.graphics.framebuffer.FramebufferCreator;
+import com.maple.graphics.framebuffer.attachment.FramebufferColorAttachmentCreator;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.binder.ShaderBinderCreator;
+import com.maple.graphics.texture.Texture2DCreator;
 import com.maple.graphics.window.Window;
 import com.maple.input.InputModeCallbackDispatcher;
 import com.maple.input.keyboard.KeyCallback;
@@ -223,12 +226,17 @@ public class MapleGame implements IGame {
 
         mSpriteRenderer = new SpriteRenderer(mRenderer, spriteVertexShader, spriteFragmentShader, quadMesh);
 
+        Texture2DCreator texture2DCreator = new Texture2DCreator();
+        FramebufferColorAttachmentCreator framebufferColorAttachmentCreator = new FramebufferColorAttachmentCreator(texture2DCreator);
+        FramebufferCreator framebufferCreator = new FramebufferCreator(framebufferColorAttachmentCreator);
+
         mGraphicsManager = new GraphicsManager(mWindow,
                                                vertexArrayCreator,
                                                vertexBufferCreator,
                                                indexBufferCreator,
                                                mRenderer,
                                                mSpriteRenderer,
-                                               terrainMeshCreator);
+                                               terrainMeshCreator,
+                                               framebufferCreator);
     }
 }
