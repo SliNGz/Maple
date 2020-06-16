@@ -1,5 +1,6 @@
 package com.maple.renderer.sprite;
 
+import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
 import com.maple.math.Matrix4f;
 import com.maple.math.Vector2f;
@@ -15,7 +16,6 @@ import com.maple.renderer.exceptions.SceneAlreadyBegunException;
 import com.maple.renderer.exceptions.SceneHasNotBegunException;
 import com.maple.renderer.gamma.GammaCorrectionController;
 import com.maple.renderer.mesh.Mesh;
-import com.maple.renderer.sprite.shader.SpriteFragmentShader;
 import com.maple.renderer.sprite.shader.SpriteVertexShader;
 
 import static org.lwjgl.opengl.GL11.GL_LEQUAL;
@@ -34,7 +34,7 @@ public class SpriteRenderer {
 
     private Effect mEffect;
     private SpriteVertexShader mVertexShader;
-    private SpriteFragmentShader mFragmentShader;
+    private IShader mFragmentShader;
 
     private Mesh mQuadMesh;
     private ICamera mCamera;
@@ -46,7 +46,9 @@ public class SpriteRenderer {
     private boolean mWasBlendingEnabled;
     private boolean mWasGammaCorrectionEnabled;
 
-    public SpriteRenderer(Renderer renderer, SpriteVertexShader vertexShader, SpriteFragmentShader fragmentShader, Mesh quadMesh) {
+    private IShader mBoundFragmentShader;
+
+    public SpriteRenderer(Renderer renderer, SpriteVertexShader vertexShader, IShader fragmentShader, Mesh quadMesh) {
         mRenderer = renderer;
         mDepthTestController = mRenderer.getDepthTestController();
         mCullingController = mRenderer.getCullingController();
@@ -64,12 +66,12 @@ public class SpriteRenderer {
         mSceneBegun = false;
     }
 
-    public void beginScene(ICamera camera) {
+    private void beginScene(ICamera camera, Effect effect) {
         if (mSceneBegun) {
             throw new SceneAlreadyBegunException();
         }
 
-        mRenderer.setEffect(mEffect);
+        mRenderer.setEffect(effect);
         mCamera = camera;
         mRenderer.bindMesh(mQuadMesh);
         enableDepthTest();
@@ -78,6 +80,16 @@ public class SpriteRenderer {
         disableGammaCorrection();
 
         mSceneBegun = true;
+    }
+
+    public void beginScene(ICamera camera) {
+        mBoundFragmentShader = mFragmentShader;
+        beginScene(camera, mEffect);
+    }
+
+    public void beginScene(ICamera camera, IShader fragmentShader) {
+        mBoundFragmentShader = fragmentShader;
+        beginScene(camera, new Effect(mVertexShader, fragmentShader));
     }
 
     public void endScene() {
@@ -123,7 +135,6 @@ public class SpriteRenderer {
         mRenderer.setViewProjectionMatrix(mCamera.getViewProjectionMatrix());
         mRenderer.setModelMatrix(modelMatrix);
         mVertexShader.setMask(sprite.getMaskPosition(), sprite.getMaskDimensions());
-        mFragmentShader.setColor(sprite.getColor());
         mRenderer.render();
     }
 

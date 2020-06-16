@@ -4,7 +4,6 @@ import com.maple.graphics.texture.Texture2D;
 import com.maple.math.MathHelper;
 import com.maple.math.Vector2f;
 import com.maple.math.Vector3f;
-import com.maple.utils.Color;
 
 public class Sprite {
     private Texture2D mTexture;
@@ -15,7 +14,6 @@ public class Sprite {
     private Vector2f mDimensions;
     private Vector2f mMaskPosition;
     private Vector2f mMaskDimensions;
-    private Color mColor;
 
     public Sprite(Texture2D texture) {
         mTexture = texture;
@@ -25,7 +23,6 @@ public class Sprite {
         mDimensions = new Vector2f(mTexture.getWidth(), mTexture.getHeight());
         mMaskPosition = new Vector2f();
         mMaskDimensions = new Vector2f(1, 1);
-        mColor = new Color(255, 255, 255);
     }
 
     public Texture2D getTexture() {
@@ -106,15 +103,6 @@ public class Sprite {
     public Sprite setMaskDimensions(int width, int height) {
         mMaskDimensions.X = MathHelper.clamp(width / (float) mTexture.getWidth(), 0, 1);
         mMaskDimensions.Y = MathHelper.clamp(height / (float) mTexture.getHeight(), 0, 1);
-        return this;
-    }
-
-    public Color getColor() {
-        return mColor;
-    }
-
-    public Sprite setColor(Color color) {
-        mColor = color;
         return this;
     }
 }

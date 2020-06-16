@@ -36,7 +36,6 @@ import com.maple.renderer.mesh.terrain.TerrainIndicesBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.renderer.mesh.terrain.TerrainPositionBufferCreator;
 import com.maple.renderer.sprite.SpriteRenderer;
-import com.maple.renderer.sprite.shader.SpriteFragmentShader;
 import com.maple.renderer.sprite.shader.SpriteVertexShader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -217,7 +216,7 @@ public class MapleGame implements IGame {
                                                                        terrainIndicesBufferCreator);
 
         SpriteVertexShader spriteVertexShader = new SpriteVertexShader(mContentLoader.load(IShader.class, "sprite_vertex_shader.vs"));
-        SpriteFragmentShader spriteFragmentShader = new SpriteFragmentShader(mContentLoader.load(IShader.class, "sprite_fragment_shader.fs"));
+        IShader spriteFragmentShader = mContentLoader.load(IShader.class, "sprite_fragment_shader.fs");
 
         PositionTextureQuadMeshCreator positionTextureQuadMeshCreator = new PositionTextureQuadMeshCreator(vertexBufferCreator,
                                                                                                            vertexArrayCreator,

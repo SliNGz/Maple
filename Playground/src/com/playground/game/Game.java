@@ -51,8 +51,6 @@ import java.util.List;
 import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING;
-import static org.lwjgl.opengl.GL30.glGetFramebufferAttachmentParameteriv;
 
 public class Game implements IGame {
     private GraphicsManager mGraphicsManager;
@@ -66,6 +64,9 @@ public class Game implements IGame {
     private IShader mVertexShader;
     private PhongFragmentShader mFragmentShader;
 
+    private IShader mHDRFragmentShader;
+    private IShader mSpriteFragmentShader;
+
     private Effect mEffect;
 
     private PerspectiveCamera mPerspectiveCamera;
@@ -78,9 +79,7 @@ public class Game implements IGame {
 
     private Mesh mCubeMesh;
 
-    private int[][] mMap;
-
-    private Vector3f mLightPosition = new Vector3f(-10, -10, -10);
+    private Vector3f mLightPosition = new Vector3f(20, 20, 20);
     private Color mLightColor = new Color(255, 255, 255);
 
     private Framebuffer mFramebuffer;
@@ -101,6 +100,8 @@ public class Game implements IGame {
 
         mVertexShader = mContentLoader.load(IShader.class, "phong_vertex_shader.vs");
         mFragmentShader = new PhongFragmentShader(mContentLoader.load(IShader.class, "phong_fragment_shader.fs"));
+        mHDRFragmentShader = mContentLoader.load(IShader.class, "hdr_fragment_shader.fs");
+        mSpriteFragmentShader = mContentLoader.load(IShader.class, "sprite_fragment_shader.fs");
 
         mEffect = new Effect(mVertexShader, mFragmentShader);
 
@@ -126,16 +127,7 @@ public class Game implements IGame {
 
         mTexture = mContentLoader.load(Texture2D.class, "image.png");
 
-        Random random = new Random();
-        mMap = new int[16][16];
-        for (int i = 0; i < 16; ++i) {
-            for (int j = 0; j < 16; ++j) {
-                mMap[i][j] = random.nextInt(6) * random.nextInt(2);
-            }
-        }
-
-
-        Color color = new Color(1.0F, 0.0F, 0.0F);
+        Color color = new Color(1.0F, 1.0F, 1.0F);
         VertexBuffer cubeVertexBuffer = vertexBufferCreator.create(List.of(
                 // West
                 new VertexPositionColorNormal(new Vector3f(0, 0, 0), color, new Vector3f(-1, 0, 0)),
@@ -197,7 +189,7 @@ public class Game implements IGame {
 
         FramebufferCreator framebufferCreator = mGraphicsManager.getFramebufferCreator();
         mFramebuffer = framebufferCreator.create(mWindow.getWidth(), mWindow.getHeight(),
-                                                 TextureInternalFormat.RGB, TexelDataFormat.RGB, TexelDataType.UNSIGNED_BYTE);
+                                                 TextureInternalFormat.RGB16F, TexelDataFormat.RGB, TexelDataType.FLOAT);
     }
 
 
@@ -213,11 +205,26 @@ public class Game implements IGame {
 //
 //        mOrthographicCamera.setRoll(mOrthographicCamera.getRoll() + 0.007F);
 
-        mLightPosition.add(new Vector3f(0.1F, 0.1F, 0.1F));
+//        mLightPosition.add(new Vector3f(0.1F, 0.1F, 0.1F));
+
+        if (updateExposure) {
+            float lowExposure = 1;
+            exposure = MathHelper.lerp(exposure, lowExposure, 0.1F);
+//            exposure = MathHelper.clamp(exposure - 0.1F, lowExposure, exposure);
+            Logger.infoCore("EXPOSURE: " + exposure);
+
+            if (exposure == lowExposure) {
+                updateExposure = false;
+            }
+        }
     }
+
+    boolean updateExposure = false;
+    float exposure = 1;
 
     @Override
     public void render(float alpha) {
+        mRenderer.bindFramebuffer(mFramebuffer);
         mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
         mFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
         mFragmentShader.setLightPosition(mLightPosition);
@@ -230,24 +237,11 @@ public class Game implements IGame {
         mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-10, -10, -10)), Matrix4f.createScale(20)));
         mRenderer.bindMesh(mCubeMesh);
         mRenderer.render();
-
-        mRenderer.bindFramebuffer(mFramebuffer);
-            mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
-            mFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
-            mFragmentShader.setLightPosition(mLightPosition);
-            mFragmentShader.setLightColor(mLightColor);
-            mFragmentShader.setLightAttenuationIntensity(0.001F);
-            mFragmentShader.setAmbientIntensity(0.07F);
-
-            mRenderer.setEffect(mEffect);
-            mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
-            mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-10, -10, -10)), Matrix4f.createScale(20)));
-            mRenderer.bindMesh(mCubeMesh);
-            mRenderer.render();
         mRenderer.unbindFramebuffer();
 
-        mSpriteRenderer.beginScene(mOrthographicCamera);
-        mSpriteRenderer.render(new Sprite(mFramebuffer.getTexture()).setScale(0.5F));
+        mHDRFragmentShader.getUniformController().setFloat("u_Exposure", exposure);
+        mSpriteRenderer.beginScene(mOrthographicCamera, mHDRFragmentShader);
+        mSpriteRenderer.render(new Sprite(mFramebuffer.getTexture()));
         mSpriteRenderer.endScene();
     }
 
@@ -307,6 +301,17 @@ public class Game implements IGame {
                                                           mPerspectiveCamera.getRotation().Y + MathHelper.PI / 2);
                 vector3f.normalize();
                 mPerspectiveCamera.addPosition(vector3f);
+            }
+
+            @Override
+            public void onKeyUp() {
+            }
+        });
+        mKeymap.add(new Key(GLFW_KEY_R), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                updateExposure = true;
+                exposure = 7;
             }
 
             @Override
