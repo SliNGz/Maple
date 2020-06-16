@@ -10,6 +10,7 @@ import com.maple.renderer.blending.BlendingController;
 import com.maple.renderer.cull.CullingController;
 import com.maple.renderer.cull.CullingFace;
 import com.maple.renderer.cull.CullingMode;
+import com.maple.renderer.gamma.GammaCorrectionController;
 
 public class RendererCreator {
     private ShaderBinderCreator mShaderBinderCreator;
@@ -35,6 +36,8 @@ public class RendererCreator {
 
         FramebufferBinder framebufferBinder = new FramebufferBinder();
 
+        GammaCorrectionController gammaCorrectionController = new GammaCorrectionController();
+
         depthTestController.enable();
         cullingController.enable();
         cullingController.setFaceCulling(CullingFace.BACK);
@@ -43,8 +46,10 @@ public class RendererCreator {
         bufferClearer.enableColorBufferBit();
         bufferClearer.enableDepthBufferBit();
 
+        gammaCorrectionController.enable();
+
         return new Renderer(depthTestController, cullingController, bufferClearer, effectBinder, bufferBinder,
-                            textureBinder, blendingController, framebufferBinder);
+                            textureBinder, blendingController, framebufferBinder, gammaCorrectionController);
     }
 
     public void destroy(Renderer renderer) {

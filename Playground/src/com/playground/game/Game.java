@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING;
+import static org.lwjgl.opengl.GL30.glGetFramebufferAttachmentParameteriv;
 
 public class Game implements IGame {
     private GraphicsManager mGraphicsManager;
@@ -216,7 +218,6 @@ public class Game implements IGame {
 
     @Override
     public void render(float alpha) {
-        mRenderer.bindFramebuffer(mFramebuffer);
         mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
         mFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
         mFragmentShader.setLightPosition(mLightPosition);
@@ -230,10 +231,23 @@ public class Game implements IGame {
         mRenderer.bindMesh(mCubeMesh);
         mRenderer.render();
 
+        mRenderer.bindFramebuffer(mFramebuffer);
+            mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
+            mFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
+            mFragmentShader.setLightPosition(mLightPosition);
+            mFragmentShader.setLightColor(mLightColor);
+            mFragmentShader.setLightAttenuationIntensity(0.001F);
+            mFragmentShader.setAmbientIntensity(0.07F);
+
+            mRenderer.setEffect(mEffect);
+            mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
+            mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-10, -10, -10)), Matrix4f.createScale(20)));
+            mRenderer.bindMesh(mCubeMesh);
+            mRenderer.render();
         mRenderer.unbindFramebuffer();
 
         mSpriteRenderer.beginScene(mOrthographicCamera);
-        mSpriteRenderer.render(new Sprite(mFramebuffer.getTexture()));
+        mSpriteRenderer.render(new Sprite(mFramebuffer.getTexture()).setScale(0.5F));
         mSpriteRenderer.endScene();
     }
 
