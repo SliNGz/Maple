@@ -18,8 +18,8 @@ import com.maple.graphics.framebuffer.Framebuffer;
 import com.maple.graphics.framebuffer.FramebufferCreator;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
-import com.maple.graphics.texture.TexelDataFormat;
-import com.maple.graphics.texture.TexelDataType;
+import com.maple.graphics.texture.PixelDataFormat;
+import com.maple.graphics.texture.PixelDataType;
 import com.maple.graphics.texture.Texture2D;
 import com.maple.graphics.texture.TextureInternalFormat;
 import com.maple.graphics.window.Window;
@@ -48,7 +48,6 @@ import com.maple.world.terrain.TerrainCreator;
 import com.maple.world.terrain.heightmap.DefaultHeightMapGeneratorBuilder;
 
 import java.util.List;
-import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -189,7 +188,7 @@ public class Game implements IGame {
 
         FramebufferCreator framebufferCreator = mGraphicsManager.getFramebufferCreator();
         mFramebuffer = framebufferCreator.create(mWindow.getWidth(), mWindow.getHeight(),
-                                                 TextureInternalFormat.RGB16F, TexelDataFormat.RGB, TexelDataType.FLOAT);
+                                                 TextureInternalFormat.RGB16F, PixelDataFormat.RGB, PixelDataType.FLOAT);
     }
 
 

@@ -12,8 +12,8 @@ public class FramebufferColorAttachmentCreator {
     }
 
     public FramebufferAttachment create(int width, int height, TextureInternalFormat internalFormat,
-                                        TexelDataFormat dataFormat, TexelDataType type) {
-        Texture2D texture = mTexture2DCreator.create(width, height, internalFormat, dataFormat, type, null);
+                                        PixelDataFormat dataFormat, PixelDataType dataType) {
+        Texture2D texture = mTexture2DCreator.create(width, height, internalFormat, dataFormat, dataType, null);
 
         return new FramebufferAttachment(GL_COLOR_ATTACHMENT0, texture);
     }
