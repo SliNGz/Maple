@@ -36,24 +36,24 @@ public class Texture2DLoader implements IContentLoader<Texture2D> {
             int channels = channelsBuffer.get();
 
             TextureInternalFormat internalFormat;
-            TexelDataFormat dataFormat;
+            PixelDataFormat dataFormat;
 
             switch (channels) {
                 case STBI_rgb:
                     internalFormat = TextureInternalFormat.RGB8;
-                    dataFormat = TexelDataFormat.RGB;
+                    dataFormat = PixelDataFormat.RGB;
                     break;
 
                 case STBI_rgb_alpha:
                     internalFormat = TextureInternalFormat.RGBA8;
-                    dataFormat = TexelDataFormat.RGBA;
+                    dataFormat = PixelDataFormat.RGBA;
                     break;
 
                 default:
                     throw new Texture2DFormatNotSupported();
             }
 
-            return mTexture2DCreator.create(width, height, internalFormat, dataFormat, TexelDataType.UNSIGNED_BYTE, data);
+            return mTexture2DCreator.create(width, height, internalFormat, dataFormat, PixelDataType.UNSIGNED_BYTE, data);
         } catch (Throwable throwable) {
             throw new Texture2DLoadFailedException(throwable);
         }

@@ -3,8 +3,8 @@ package com.maple.graphics.framebuffer;
 import com.maple.graphics.framebuffer.attachment.FramebufferAttachment;
 import com.maple.graphics.framebuffer.attachment.FramebufferColorAttachmentCreator;
 import com.maple.graphics.framebuffer.exceptions.FramebufferCreationFailedException;
-import com.maple.graphics.texture.TexelDataFormat;
-import com.maple.graphics.texture.TexelDataType;
+import com.maple.graphics.texture.PixelDataFormat;
+import com.maple.graphics.texture.PixelDataType;
 import com.maple.graphics.texture.Texture2D;
 import com.maple.graphics.texture.TextureInternalFormat;
 
@@ -21,12 +21,12 @@ public class FramebufferCreator {
     }
 
     public Framebuffer create(int width, int height, TextureInternalFormat internalFormat,
-                              TexelDataFormat dataFormat, TexelDataType type, FramebufferAttachment... attachments) {
+                              PixelDataFormat dataFormat, PixelDataType dataType, FramebufferAttachment... attachments) {
         int handle = glGenFramebuffers();
 
         glBindFramebuffer(GL_FRAMEBUFFER, handle);
 
-        FramebufferAttachment colorAttachment = mColorAttachmentCreator.create(width, height, internalFormat, dataFormat, type);
+        FramebufferAttachment colorAttachment = mColorAttachmentCreator.create(width, height, internalFormat, dataFormat, dataType);
 
         ArrayList<FramebufferAttachment> attachmentList = new ArrayList<>(Arrays.asList(attachments));
         attachmentList.add(0, colorAttachment);
