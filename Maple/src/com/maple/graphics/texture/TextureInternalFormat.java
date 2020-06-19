@@ -93,7 +93,7 @@ public class TextureInternalFormat {
 
     private int mValue;
 
-    public TextureInternalFormat(int value) {
+    private TextureInternalFormat(int value) {
         mValue = value;
     }
 
