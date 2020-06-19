@@ -24,7 +24,7 @@ public class PixelDataFormat {
 
     private int mValue;
 
-    public PixelDataFormat(int value) {
+    private PixelDataFormat(int value) {
         mValue = value;
     }
 

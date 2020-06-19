@@ -28,7 +28,7 @@ public class PixelDataType {
 
     private int mValue;
 
-    public PixelDataType(int value) {
+    private PixelDataType(int value) {
         mValue = value;
     }
 

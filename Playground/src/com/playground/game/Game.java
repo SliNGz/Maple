@@ -18,10 +18,7 @@ import com.maple.graphics.framebuffer.Framebuffer;
 import com.maple.graphics.framebuffer.FramebufferCreator;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
-import com.maple.graphics.texture.PixelDataFormat;
-import com.maple.graphics.texture.PixelDataType;
-import com.maple.graphics.texture.Texture2D;
-import com.maple.graphics.texture.TextureInternalFormat;
+import com.maple.graphics.texture.*;
 import com.maple.graphics.window.Window;
 import com.maple.input.keyboard.IKeyAction;
 import com.maple.input.keyboard.Key;
@@ -65,6 +62,7 @@ public class Game implements IGame {
 
     private IShader mHDRFragmentShader;
     private IShader mSpriteFragmentShader;
+    private IShader mShadowMappingShader;
 
     private Effect mEffect;
 
@@ -101,6 +99,7 @@ public class Game implements IGame {
         mFragmentShader = new PhongFragmentShader(mContentLoader.load(IShader.class, "phong_fragment_shader.fs"));
         mHDRFragmentShader = mContentLoader.load(IShader.class, "hdr_fragment_shader.fs");
         mSpriteFragmentShader = mContentLoader.load(IShader.class, "sprite_fragment_shader.fs");
+        mShadowMappingShader = mContentLoader.load(IShader.class, "shadow_mapping.fs");
 
         mEffect = new Effect(mVertexShader, mFragmentShader);
 
@@ -126,7 +125,7 @@ public class Game implements IGame {
 
         mTexture = mContentLoader.load(Texture2D.class, "image.png");
 
-        Color color = new Color(1.0F, 1.0F, 1.0F);
+        Color color = new Color(1.0F, 1.0F, 1.0F, 1.0F);
         VertexBuffer cubeVertexBuffer = vertexBufferCreator.create(List.of(
                 // West
                 new VertexPositionColorNormal(new Vector3f(0, 0, 0), color, new Vector3f(-1, 0, 0)),
@@ -187,10 +186,15 @@ public class Game implements IGame {
         mCubeMesh = new Mesh(cubeVertexArray, cubeIndexBuffer);
 
         FramebufferCreator framebufferCreator = mGraphicsManager.getFramebufferCreator();
-        mFramebuffer = framebufferCreator.create(mWindow.getWidth(), mWindow.getHeight(),
-                                                 TextureInternalFormat.RGB16F, PixelDataFormat.RGB, PixelDataType.FLOAT);
+        Texture2DCreator texture2DCreator = new Texture2DCreator();
+        Texture2D depthBuffer = texture2DCreator.create(mWindow.getWidth(), mWindow.getHeight(),
+                                                        TextureInternalFormat.DEPTH_COMPONENT, PixelDataFormat.DEPTH_COMPONENT, PixelDataType.FLOAT);
+//        Texture2D colorTexture = texture2DCreator.create(mWindow.getWidth(), mWindow.getHeight(),
+//                                TextureInternalFormat.RGB16F, PixelDataFormat.RGB, PixelDataType.FLOAT);
+        Texture2D colorTexture = texture2DCreator.create(mWindow.getWidth(), mWindow.getHeight(),
+                                                         TextureInternalFormat.RGB16F, PixelDataFormat.RGB, PixelDataType.FLOAT);
+        mFramebuffer = framebufferCreator.create(colorTexture, depthBuffer);
     }
-
 
     @Override
     public void update(GameTime gameTime) {
@@ -224,7 +228,8 @@ public class Game implements IGame {
     @Override
     public void render(float alpha) {
         mRenderer.bindFramebuffer(mFramebuffer);
-        mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
+//        mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
+        mRenderer.getBufferClearer().clear(new Color(0.392F, 0.584F, 0.929F, 1.0F), 1.0F);
         mFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
         mFragmentShader.setLightPosition(mLightPosition);
         mFragmentShader.setLightColor(mLightColor);
@@ -233,14 +238,18 @@ public class Game implements IGame {
 
         mRenderer.setEffect(mEffect);
         mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
-        mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-10, -10, -10)), Matrix4f.createScale(20)));
         mRenderer.bindMesh(mCubeMesh);
+
+        mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-10, 20, -10)), Matrix4f.createScale(20)));
+        mRenderer.render();
+
+        mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-100, 0, -100)), Matrix4f.createScale(new Vector3f(200, 1, 200))));
         mRenderer.render();
         mRenderer.unbindFramebuffer();
 
         mHDRFragmentShader.getUniformController().setFloat("u_Exposure", exposure);
-        mSpriteRenderer.beginScene(mOrthographicCamera, mHDRFragmentShader);
-        mSpriteRenderer.render(new Sprite(mFramebuffer.getTexture()));
+        mSpriteRenderer.beginScene(mOrthographicCamera, mShadowMappingShader);
+        mSpriteRenderer.render(new Sprite(mFramebuffer.getDepthBuffer()));
         mSpriteRenderer.endScene();
     }
 
