@@ -5,6 +5,7 @@ import com.maple.graphics.shader.ShaderType;
 import com.maple.graphics.shader.program.ShaderProgram;
 import com.maple.graphics.shader.uniform.ShaderUniformController;
 import com.maple.math.Vector3f;
+import com.maple.math.Vector4f;
 import com.maple.utils.Color;
 
 public class PhongFragmentShader implements IShader {
@@ -45,6 +46,10 @@ public class PhongFragmentShader implements IShader {
 
     public void setLightColor(Color lightColor) {
         getUniformController().setColor(UNIFORM_LIGHT_COLOR, lightColor);
+    }
+
+    public void setLightColor(Vector4f lightColor) {
+        getUniformController().setVector4f(UNIFORM_LIGHT_COLOR, lightColor);
     }
 
     public void setLightAttenuationIntensity(float lightAttenuationIntensity) {

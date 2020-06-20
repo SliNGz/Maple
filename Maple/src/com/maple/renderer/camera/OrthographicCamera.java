@@ -5,25 +5,27 @@ import com.maple.math.Vector3f;
 
 public class OrthographicCamera implements ICamera {
     private Vector3f mPosition;
-    private float mRoll;
+    private Vector3f mRotation;
 
     private float mLeft;
     private float mRight;
     private float mBottom;
     private float mTop;
+    private float mNear;
+    private float mFar;
     private float mScale;
 
     private Matrix4f mView;
     private Matrix4f mProjection;
     private Matrix4f mViewProjection;
 
-    public OrthographicCamera(int width, int height) {
-        this(0, width, 0, height);
+    public OrthographicCamera(int width, int height, float near, float far) {
+        this(0, width, 0, height, near, far);
     }
 
-    public OrthographicCamera(float left, float right, float bottom, float top) {
-        setViewFields(new Vector3f(), 0.0F);
-        setProjectionFields(left, right, bottom, top, 1.0F);
+    public OrthographicCamera(float left, float right, float bottom, float top, float near, float far) {
+        setViewFields(new Vector3f(), new Vector3f());
+        setProjectionFields(left, right, bottom, top, near, far, 1.0F);
         updateViewProjectionMatrix();
     }
 
@@ -32,16 +34,16 @@ public class OrthographicCamera implements ICamera {
     }
 
     public void setPosition(Vector3f position) {
-        setViewFields(position, mRoll);
+        setViewFields(position, mRotation);
         updateViewProjectionMatrix();
     }
 
-    public float getRoll() {
-        return mRoll;
+    public Vector3f getRotation() {
+        return mRotation;
     }
 
-    public void setRoll(float roll) {
-        setViewFields(mPosition, roll);
+    public void setRotation(Vector3f rotation) {
+        setViewFields(mPosition, rotation);
         updateViewProjectionMatrix();
     }
 
@@ -50,26 +52,31 @@ public class OrthographicCamera implements ICamera {
     }
 
     public void setScale(float scale) {
-        setProjectionFields(mLeft, mRight, mBottom, mTop, scale);
+        setProjectionFields(mLeft, mRight, mBottom, mTop, mNear, mFar, scale);
         updateViewProjectionMatrix();
     }
 
-    private void setViewFields(Vector3f position, float roll) {
+    private void setViewFields(Vector3f position, Vector3f rotation) {
         mPosition = position;
-        mRoll = roll;
-        mView = Matrix4f.multiply(Matrix4f.createTranslation(Vector3f.negate(mPosition)), Matrix4f.createRotationZ(mRoll));
+        mRotation = rotation;
+        mView = Matrix4f.multiply(Matrix4f.createTranslation(Vector3f.negate(mPosition)),
+                                  Matrix4f.createRotationX(mRotation.X),
+                                  Matrix4f.createRotationY(mRotation.Y),
+                                  Matrix4f.createRotationZ(mRotation.Z));
     }
 
-    private void setProjectionFields(float left, float right, float bottom, float top, float scale) {
+    private void setProjectionFields(float left, float right, float bottom, float top, float near, float far, float scale) {
         mLeft = left;
         mRight = right;
         mBottom = bottom;
         mTop = top;
+        mNear = near;
+        mFar = far;
         mScale = scale;
         mProjection = Matrix4f.createOrthographic(mLeft * mScale,
                                                   mRight * mScale,
                                                   mBottom * mScale,
-                                                  mTop * mScale, -1.0F, 1.0F);
+                                                  mTop * mScale, mNear, mFar);
     }
 
     @Override

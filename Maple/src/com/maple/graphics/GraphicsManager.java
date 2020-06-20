@@ -4,6 +4,7 @@ import com.maple.graphics.buffer.index.IndexBufferCreator;
 import com.maple.graphics.buffer.vertex.VertexArrayCreator;
 import com.maple.graphics.buffer.vertex.VertexBufferCreator;
 import com.maple.graphics.framebuffer.FramebufferCreator;
+import com.maple.graphics.texture.Texture2DCreator;
 import com.maple.graphics.window.Window;
 import com.maple.renderer.Renderer;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
@@ -17,6 +18,7 @@ public class GraphicsManager {
     private Renderer mRenderer;
     private SpriteRenderer mSpriteRenderer;
     private TerrainMeshCreator mTerrainMeshCreator;
+    private Texture2DCreator mTexture2DCreator;
     private FramebufferCreator mFramebufferCreator;
 
     public GraphicsManager(Window window,
@@ -26,6 +28,7 @@ public class GraphicsManager {
                            Renderer renderer,
                            SpriteRenderer spriteRenderer,
                            TerrainMeshCreator terrainMeshCreator,
+                           Texture2DCreator texture2DCreator,
                            FramebufferCreator framebufferCreator) {
         mWindow = window;
         mVertexArrayCreator = vertexArrayCreator;
@@ -34,6 +37,7 @@ public class GraphicsManager {
         mRenderer = renderer;
         mSpriteRenderer = spriteRenderer;
         mTerrainMeshCreator = terrainMeshCreator;
+        mTexture2DCreator = texture2DCreator;
         mFramebufferCreator = framebufferCreator;
     }
 
@@ -63,6 +67,10 @@ public class GraphicsManager {
 
     public TerrainMeshCreator getTerrainMeshCreator() {
         return mTerrainMeshCreator;
+    }
+
+    public Texture2DCreator getTexture2DCreator() {
+        return mTexture2DCreator;
     }
 
     public FramebufferCreator getFramebufferCreator() {
