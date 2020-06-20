@@ -18,7 +18,12 @@ import com.maple.graphics.framebuffer.Framebuffer;
 import com.maple.graphics.framebuffer.FramebufferCreator;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
+import com.maple.graphics.shader.exceptions.ShaderNotSetException;
 import com.maple.graphics.texture.*;
+import com.maple.graphics.texture.parameters.TextureParameterBorderColor;
+import com.maple.graphics.texture.parameters.TextureParameterWrap;
+import com.maple.graphics.texture.parameters.TextureParameterWrapS;
+import com.maple.graphics.texture.parameters.TextureParameterWrapT;
 import com.maple.graphics.window.Window;
 import com.maple.input.keyboard.IKeyAction;
 import com.maple.input.keyboard.Key;
@@ -28,6 +33,7 @@ import com.maple.log.Logger;
 import com.maple.math.MathHelper;
 import com.maple.math.Matrix4f;
 import com.maple.math.Vector3f;
+import com.maple.math.Vector4f;
 import com.maple.renderer.Renderer;
 import com.maple.renderer.camera.OrthographicCamera;
 import com.maple.renderer.camera.PerspectiveCamera;
@@ -47,6 +53,7 @@ import com.maple.world.terrain.heightmap.DefaultHeightMapGeneratorBuilder;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.glViewport;
 
 public class Game implements IGame {
     private GraphicsManager mGraphicsManager;
@@ -62,12 +69,17 @@ public class Game implements IGame {
 
     private IShader mHDRFragmentShader;
     private IShader mSpriteFragmentShader;
-    private IShader mShadowMappingShader;
 
-    private Effect mEffect;
+    private Effect mColorEffect;
+    private Effect mShadowMappingEffect;
 
     private PerspectiveCamera mPerspectiveCamera;
     private OrthographicCamera mOrthographicCamera;
+
+    private OrthographicCamera m2DCamera;
+
+    private final int SHADOW_MAP_WIDTH = 2000;
+    private final int SHADOW_MAP_HEIGHT = 2000;
 
     private Terrain mTerrain;
     private Mesh mTerrainMesh;
@@ -76,10 +88,12 @@ public class Game implements IGame {
 
     private Mesh mCubeMesh;
 
-    private Vector3f mLightPosition = new Vector3f(20, 20, 20);
-    private Color mLightColor = new Color(255, 255, 255);
+    private Vector3f mLightPosition = new Vector3f(50, 200, 50);
+    private Vector4f mLightColor = new Vector4f(3.0F, 3.0F, 3.0F, 3.0F);
 
-    private Framebuffer mFramebuffer;
+    private Framebuffer mShadowMapFramebuffer;
+    private Framebuffer mOrthographicCameraViewFramebuffer;
+    private Framebuffer mHDRFramebuffer;
 
     public Game(GameContext context) {
         mGraphicsManager = context.getGraphicsManager();
@@ -99,9 +113,14 @@ public class Game implements IGame {
         mFragmentShader = new PhongFragmentShader(mContentLoader.load(IShader.class, "phong_fragment_shader.fs"));
         mHDRFragmentShader = mContentLoader.load(IShader.class, "hdr_fragment_shader.fs");
         mSpriteFragmentShader = mContentLoader.load(IShader.class, "sprite_fragment_shader.fs");
-        mShadowMappingShader = mContentLoader.load(IShader.class, "shadow_mapping.fs");
 
-        mEffect = new Effect(mVertexShader, mFragmentShader);
+        IShader colorVertexShader = mContentLoader.load(IShader.class, "color_shader.vs");
+//        IShader colorFragmentShader = mContentLoader.load(IShader.class, "color_shader.fs");
+        mColorEffect = new Effect(colorVertexShader);
+
+        IShader shadowMappingVertexShader = mContentLoader.load(IShader.class, "shadow_mapping.vs");
+        IShader shadowMappingFragmentShader = mContentLoader.load(IShader.class, "shadow_mapping.fs");
+        mShadowMappingEffect = new Effect(shadowMappingVertexShader, shadowMappingFragmentShader);
 
         mPerspectiveCamera = new PerspectiveCamera(45, mWindow.getAspectRatio(), 0.01F, 1000);
         mPerspectiveCamera.setPosition(new Vector3f(40, 40, 40));
@@ -110,7 +129,11 @@ public class Game implements IGame {
 
         initializeKeyBindings();
 
-        mOrthographicCamera = new OrthographicCamera(mWindow.getWidth(), mWindow.getHeight());
+        m2DCamera = new OrthographicCamera(mWindow.getWidth(), mWindow.getHeight(), -1.0F, 1.0F);
+
+        mOrthographicCamera = new OrthographicCamera(-300, 300, -300, 300, 1, 300);
+        mOrthographicCamera.setPosition(mLightPosition);
+        mOrthographicCamera.setRotation(new Vector3f(MathHelper.toRadians(90), MathHelper.toRadians(0), 0));
 
         TerrainCreator terrainCreator = new TerrainCreator(new DefaultHeightMapGeneratorBuilder().build());
         mTerrain = terrainCreator.create(256, 256);
@@ -125,43 +148,49 @@ public class Game implements IGame {
 
         mTexture = mContentLoader.load(Texture2D.class, "image.png");
 
-        Color color = new Color(1.0F, 1.0F, 1.0F, 1.0F);
+        Color colorX = new Color(1.0F, 0.0F, 0.0F, 1.0F);
+        Color colorY = new Color(0.0F, 1.0F, 0.0F, 1.0F);
+        Color colorZ = new Color(0.0F, 0.0F, 1.0F, 1.0F);
+
+//        Color colorX = new Color(1.0F, 1.0F, 1.0F, 1.0F);
+//        Color colorY = new Color(1.0F, 1.0F, 1.0F, 1.0F);
+//        Color colorZ = new Color(1.0F, 1.0F, 1.0F, 1.0F);
         VertexBuffer cubeVertexBuffer = vertexBufferCreator.create(List.of(
                 // West
-                new VertexPositionColorNormal(new Vector3f(0, 0, 0), color, new Vector3f(-1, 0, 0)),
-                new VertexPositionColorNormal(new Vector3f(0, 1, 0), color, new Vector3f(-1, 0, 0)),
-                new VertexPositionColorNormal(new Vector3f(0, 1, 1), color, new Vector3f(-1, 0, 0)),
-                new VertexPositionColorNormal(new Vector3f(0, 0, 1), color, new Vector3f(-1, 0, 0)),
+                new VertexPositionColorNormal(new Vector3f(0, 0, 0), colorX, new Vector3f(-1, 0, 0)),
+                new VertexPositionColorNormal(new Vector3f(0, 1, 0), colorX, new Vector3f(-1, 0, 0)),
+                new VertexPositionColorNormal(new Vector3f(0, 1, 1), colorX, new Vector3f(-1, 0, 0)),
+                new VertexPositionColorNormal(new Vector3f(0, 0, 1), colorX, new Vector3f(-1, 0, 0)),
 
                 // East
-                new VertexPositionColorNormal(new Vector3f(1, 0, 0), color, new Vector3f(1, 0, 0)),
-                new VertexPositionColorNormal(new Vector3f(1, 0, 1), color, new Vector3f(1, 0, 0)),
-                new VertexPositionColorNormal(new Vector3f(1, 1, 1), color, new Vector3f(1, 0, 0)),
-                new VertexPositionColorNormal(new Vector3f(1, 1, 0), color, new Vector3f(1, 0, 0)),
+                new VertexPositionColorNormal(new Vector3f(1, 0, 0), colorX, new Vector3f(1, 0, 0)),
+                new VertexPositionColorNormal(new Vector3f(1, 0, 1), colorX, new Vector3f(1, 0, 0)),
+                new VertexPositionColorNormal(new Vector3f(1, 1, 1), colorX, new Vector3f(1, 0, 0)),
+                new VertexPositionColorNormal(new Vector3f(1, 1, 0), colorX, new Vector3f(1, 0, 0)),
 
                 // North
-                new VertexPositionColorNormal(new Vector3f(0, 0, 0), color, new Vector3f(0, 0, -1)),
-                new VertexPositionColorNormal(new Vector3f(1, 0, 0), color, new Vector3f(0, 0, -1)),
-                new VertexPositionColorNormal(new Vector3f(1, 1, 0), color, new Vector3f(0, 0, -1)),
-                new VertexPositionColorNormal(new Vector3f(0, 1, 0), color, new Vector3f(0, 0, -1)),
+                new VertexPositionColorNormal(new Vector3f(0, 0, 0), colorY, new Vector3f(0, 0, -1)),
+                new VertexPositionColorNormal(new Vector3f(1, 0, 0), colorY, new Vector3f(0, 0, -1)),
+                new VertexPositionColorNormal(new Vector3f(1, 1, 0), colorY, new Vector3f(0, 0, -1)),
+                new VertexPositionColorNormal(new Vector3f(0, 1, 0), colorY, new Vector3f(0, 0, -1)),
 
                 // South
-                new VertexPositionColorNormal(new Vector3f(0, 0, 1), color, new Vector3f(0, 0, 1)),
-                new VertexPositionColorNormal(new Vector3f(0, 1, 1), color, new Vector3f(0, 0, 1)),
-                new VertexPositionColorNormal(new Vector3f(1, 1, 1), color, new Vector3f(0, 0, 1)),
-                new VertexPositionColorNormal(new Vector3f(1, 0, 1), color, new Vector3f(0, 0, 1)),
+                new VertexPositionColorNormal(new Vector3f(0, 0, 1), colorY, new Vector3f(0, 0, 1)),
+                new VertexPositionColorNormal(new Vector3f(0, 1, 1), colorY, new Vector3f(0, 0, 1)),
+                new VertexPositionColorNormal(new Vector3f(1, 1, 1), colorY, new Vector3f(0, 0, 1)),
+                new VertexPositionColorNormal(new Vector3f(1, 0, 1), colorY, new Vector3f(0, 0, 1)),
 
                 // Down
-                new VertexPositionColorNormal(new Vector3f(0, 0, 0), color, new Vector3f(0, -1, 0)),
-                new VertexPositionColorNormal(new Vector3f(0, 0, 1), color, new Vector3f(0, -1, 0)),
-                new VertexPositionColorNormal(new Vector3f(1, 0, 1), color, new Vector3f(0, -1, 0)),
-                new VertexPositionColorNormal(new Vector3f(1, 0, 0), color, new Vector3f(0, -1, 0)),
+                new VertexPositionColorNormal(new Vector3f(0, 0, 0), colorZ, new Vector3f(0, -1, 0)),
+                new VertexPositionColorNormal(new Vector3f(0, 0, 1), colorZ, new Vector3f(0, -1, 0)),
+                new VertexPositionColorNormal(new Vector3f(1, 0, 1), colorZ, new Vector3f(0, -1, 0)),
+                new VertexPositionColorNormal(new Vector3f(1, 0, 0), colorZ, new Vector3f(0, -1, 0)),
 
                 // Up
-                new VertexPositionColorNormal(new Vector3f(0, 1, 0), color, new Vector3f(0, 1, 0)),
-                new VertexPositionColorNormal(new Vector3f(1, 1, 0), color, new Vector3f(0, 1, 0)),
-                new VertexPositionColorNormal(new Vector3f(1, 1, 1), color, new Vector3f(0, 1, 0)),
-                new VertexPositionColorNormal(new Vector3f(0, 1, 1), color, new Vector3f(0, 1, 0))
+                new VertexPositionColorNormal(new Vector3f(0, 1, 0), colorZ, new Vector3f(0, 1, 0)),
+                new VertexPositionColorNormal(new Vector3f(1, 1, 0), colorZ, new Vector3f(0, 1, 0)),
+                new VertexPositionColorNormal(new Vector3f(1, 1, 1), colorZ, new Vector3f(0, 1, 0)),
+                new VertexPositionColorNormal(new Vector3f(0, 1, 1), colorZ, new Vector3f(0, 1, 0))
         ), BufferUsage.STATIC_DRAW);
 
         VertexArrayCreator vertexArrayCreator = mGraphicsManager.getVertexArrayCreator();
@@ -186,71 +215,92 @@ public class Game implements IGame {
         mCubeMesh = new Mesh(cubeVertexArray, cubeIndexBuffer);
 
         FramebufferCreator framebufferCreator = mGraphicsManager.getFramebufferCreator();
-        Texture2DCreator texture2DCreator = new Texture2DCreator();
-        Texture2D depthBuffer = texture2DCreator.create(mWindow.getWidth(), mWindow.getHeight(),
-                                                        TextureInternalFormat.DEPTH_COMPONENT, PixelDataFormat.DEPTH_COMPONENT, PixelDataType.FLOAT);
-//        Texture2D colorTexture = texture2DCreator.create(mWindow.getWidth(), mWindow.getHeight(),
-//                                TextureInternalFormat.RGB16F, PixelDataFormat.RGB, PixelDataType.FLOAT);
+//        Texture2DCreator texture2DCreator = new Texture2DCreator();
+//        Texture2D depthBuffer = texture2DCreator.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT,
+//                                                        TextureInternalFormat.DEPTH_COMPONENT, PixelDataFormat.DEPTH_COMPONENT, PixelDataType.FLOAT);
+
+        Texture2DCreator texture2DCreator = mGraphicsManager.getTexture2DCreator();
+        Texture2D depthBuffer = texture2DCreator.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT,
+                                                        TextureInternalFormat.DEPTH_COMPONENT32,
+                                                        PixelDataFormat.DEPTH_COMPONENT, PixelDataType.FLOAT,
+                                                        new TextureParameterWrapS(TextureParameterWrap.Values.CLAMP_TO_BORDER),
+                                                        new TextureParameterWrapT(TextureParameterWrap.Values.CLAMP_TO_BORDER),
+                                                        new TextureParameterBorderColor(new Color(1.0F, 1.0F, 1.0F, 1.0F)));
+        mShadowMapFramebuffer = framebufferCreator.create(depthBuffer);
+
         Texture2D colorTexture = texture2DCreator.create(mWindow.getWidth(), mWindow.getHeight(),
-                                                         TextureInternalFormat.RGB16F, PixelDataFormat.RGB, PixelDataType.FLOAT);
-        mFramebuffer = framebufferCreator.create(colorTexture, depthBuffer);
+                                                         TextureInternalFormat.RGB8,
+                                                         PixelDataFormat.RGB, PixelDataType.UNSIGNED_BYTE);
+        mOrthographicCameraViewFramebuffer = framebufferCreator.create(colorTexture);
+
+        Texture2D hdrDepthTexture = texture2DCreator.create(mWindow.getWidth(), mWindow.getHeight(),
+                                                            TextureInternalFormat.DEPTH_COMPONENT24,
+                                                            PixelDataFormat.DEPTH_COMPONENT, PixelDataType.FLOAT);
+        Texture2D hdrColorTexture = texture2DCreator.create(mWindow.getWidth(), mWindow.getHeight(),
+                                                            TextureInternalFormat.RGB16F,
+                                                            PixelDataFormat.RGB, PixelDataType.FLOAT);
+        mHDRFramebuffer = framebufferCreator.create(hdrColorTexture, hdrDepthTexture);
     }
 
     @Override
     public void update(GameTime gameTime) {
-//        float y = mTerrain.get(mPerspectiveCamera.getPosition().X, mPerspectiveCamera.getPosition().Z);
-//        y += 1.8;
-//        mPerspectiveCamera.setPosition(new Vector3f(mPerspectiveCamera.getPosition().X, y, mPerspectiveCamera.getPosition().Z));
-
-//        mOrthographicCamera.setPosition(new Vector3f(mOrthographicCamera.getPosition().X + 0.001F,
-//                                                     mOrthographicCamera.getPosition().Y,
-//                                                     mOrthographicCamera.getPosition().Z));
-//
-//        mOrthographicCamera.setRoll(mOrthographicCamera.getRoll() + 0.007F);
-
-//        mLightPosition.add(new Vector3f(0.1F, 0.1F, 0.1F));
-
-        if (updateExposure) {
-            float lowExposure = 1;
-            exposure = MathHelper.lerp(exposure, lowExposure, 0.1F);
-//            exposure = MathHelper.clamp(exposure - 0.1F, lowExposure, exposure);
-            Logger.infoCore("EXPOSURE: " + exposure);
-
-            if (exposure == lowExposure) {
-                updateExposure = false;
-            }
-        }
+//        Logger.infoCore("Position: " + mOrthographicCamera.getPosition() +
+//                        " Rotation: " + MathHelper.toDegrees(mOrthographicCamera.getRotation().X));
     }
 
     boolean updateExposure = false;
     float exposure = 1;
 
-    @Override
-    public void render(float alpha) {
-        mRenderer.bindFramebuffer(mFramebuffer);
-//        mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
-        mRenderer.getBufferClearer().clear(new Color(0.392F, 0.584F, 0.929F, 1.0F), 1.0F);
-        mFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
-        mFragmentShader.setLightPosition(mLightPosition);
-        mFragmentShader.setLightColor(mLightColor);
-        mFragmentShader.setLightAttenuationIntensity(0.001F);
-        mFragmentShader.setAmbientIntensity(0.07F);
-
-        mRenderer.setEffect(mEffect);
-        mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
+    void renderScene() {
         mRenderer.bindMesh(mCubeMesh);
-
         mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-10, 20, -10)), Matrix4f.createScale(20)));
         mRenderer.render();
 
-        mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-100, 0, -100)), Matrix4f.createScale(new Vector3f(200, 1, 200))));
+        mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(-500, 0, -500)),
+                                                   Matrix4f.createScale(new Vector3f(1000, 1, 1000))));
         mRenderer.render();
-        mRenderer.unbindFramebuffer();
 
-        mHDRFragmentShader.getUniformController().setFloat("u_Exposure", exposure);
-        mSpriteRenderer.beginScene(mOrthographicCamera, mShadowMappingShader);
-        mSpriteRenderer.render(new Sprite(mFramebuffer.getDepthBuffer()));
-        mSpriteRenderer.endScene();
+//        mRenderer.setModelMatrix(Matrix4f.multiply(Matrix4f.createTranslation(new Vector3f(0, 0, -100)), Matrix4f.createScale(new Vector3f(200, 200, 1))));
+//        mRenderer.render();
+    }
+
+    @Override
+    public void render(float alpha) {
+        try {
+            glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+            mRenderer.bindFramebuffer(mShadowMapFramebuffer);
+            mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
+            mRenderer.setEffect(mColorEffect);
+            mRenderer.setViewProjectionMatrix(mOrthographicCamera.getViewProjectionMatrix());
+            renderScene();
+            mRenderer.unbindFramebuffer();
+
+            glViewport(0, 0, mWindow.getWidth(), mWindow.getHeight());
+            IShader shadowMappingVertexShader = mShadowMappingEffect.getVertexShader();
+            shadowMappingVertexShader.getUniformController().setMatrix4f("u_LightViewProjection",
+                                                                         mOrthographicCamera.getViewProjectionMatrix());
+            PhongFragmentShader shadowMappingFragmentShader = new PhongFragmentShader(mShadowMappingEffect.getFragmentShader());
+            shadowMappingFragmentShader.setLightPosition(mLightPosition);
+            shadowMappingFragmentShader.setLightColor(mLightColor);
+            shadowMappingFragmentShader.setLightAttenuationIntensity(0.001F);
+            shadowMappingFragmentShader.setAmbientIntensity(0.03F);
+            shadowMappingFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
+
+            mRenderer.bindFramebuffer(mHDRFramebuffer);
+            mRenderer.bindTexture(mShadowMapFramebuffer.getDepthBuffer());
+            mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
+            mRenderer.setEffect(mShadowMappingEffect);
+            mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
+            renderScene();
+            mRenderer.unbindFramebuffer();
+
+            mHDRFragmentShader.getUniformController().setFloat("u_Exposure", 0.1F);
+            mSpriteRenderer.beginScene(m2DCamera, mHDRFragmentShader);
+            mSpriteRenderer.render(new Sprite(mHDRFramebuffer.getColorBuffer()));
+            mSpriteRenderer.endScene();
+        } catch (ShaderNotSetException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -315,15 +365,114 @@ public class Game implements IGame {
             public void onKeyUp() {
             }
         });
-        mKeymap.add(new Key(GLFW_KEY_R), new IKeyAction() {
+
+        mKeymap.add(new Key(GLFW_KEY_UP), new IKeyAction() {
             @Override
             public void onKeyDown() {
-                updateExposure = true;
-                exposure = 7;
+                mOrthographicCamera.setPosition(mOrthographicCamera.getPosition().add(new Vector3f(0, 0, -1)));
             }
 
             @Override
             public void onKeyUp() {
+
+            }
+        });
+
+        mKeymap.add(new Key(GLFW_KEY_DOWN), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                mOrthographicCamera.setPosition(mOrthographicCamera.getPosition().add(new Vector3f(0, 0, 1)));
+            }
+
+            @Override
+            public void onKeyUp() {
+
+            }
+        });
+
+        mKeymap.add(new Key(GLFW_KEY_LEFT), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                mOrthographicCamera.setPosition(mOrthographicCamera.getPosition().add(new Vector3f(-1, 0, 0)));
+            }
+
+            @Override
+            public void onKeyUp() {
+
+            }
+        });
+
+        mKeymap.add(new Key(GLFW_KEY_RIGHT), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                mOrthographicCamera.setPosition(mOrthographicCamera.getPosition().add(new Vector3f(1, 0, 0)));
+            }
+
+            @Override
+            public void onKeyUp() {
+
+            }
+        });
+
+        mKeymap.add(new Key(GLFW_KEY_SPACE), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                mOrthographicCamera.setPosition(mOrthographicCamera.getPosition().add(new Vector3f(0, 1, 0)));
+            }
+
+            @Override
+            public void onKeyUp() {
+
+            }
+        });
+
+        mKeymap.add(new Key(GLFW_KEY_LEFT_SHIFT), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                mOrthographicCamera.setPosition(mOrthographicCamera.getPosition().add(new Vector3f(0, -1, 0)));
+            }
+
+            @Override
+            public void onKeyUp() {
+
+            }
+        });
+
+        mKeymap.add(new Key(GLFW_KEY_SPACE), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                mOrthographicCamera.setPosition(mOrthographicCamera.getPosition().add(new Vector3f(0, 1, 0)));
+            }
+
+            @Override
+            public void onKeyUp() {
+
+            }
+        });
+
+        mKeymap.add(new Key(GLFW_KEY_O), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                mOrthographicCamera.setRotation(new Vector3f(mOrthographicCamera.getRotation().X + MathHelper.toRadians(-1F),
+                                                             0, 0));
+            }
+
+            @Override
+            public void onKeyUp() {
+
+            }
+        });
+
+        mKeymap.add(new Key(GLFW_KEY_L), new IKeyAction() {
+            @Override
+            public void onKeyDown() {
+                mOrthographicCamera.setRotation(new Vector3f(mOrthographicCamera.getRotation().X + MathHelper.toRadians(1F),
+                                                             0, 0));
+            }
+
+            @Override
+            public void onKeyUp() {
+
             }
         });
     }

@@ -54,8 +54,8 @@ public class Texture2DLoader implements IContentLoader<Texture2D> {
             }
 
             return mTexture2DCreator.create(width, height, internalFormat, dataFormat, PixelDataType.UNSIGNED_BYTE, data);
-        } catch (Throwable throwable) {
-            throw new Texture2DLoadFailedException(throwable);
+        } catch (STBImageLoadFailedException | Texture2DFormatNotSupported e) {
+            throw new Texture2DLoadFailedException(e);
         }
     }
 

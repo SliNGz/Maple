@@ -7,12 +7,11 @@ import static org.lwjgl.opengl.GL33.GL_RGB10_A2UI;
 import static org.lwjgl.opengl.GL42.*;
 
 public class TextureInternalFormat {
-    public static final TextureInternalFormat DEPTH_COMPONENT = new TextureInternalFormat(GL_DEPTH_COMPONENT);
-    public static final TextureInternalFormat DEPTH_STENCIL = new TextureInternalFormat(GL_DEPTH_STENCIL);
-    public static final TextureInternalFormat RED = new TextureInternalFormat(GL_RED);
-    public static final TextureInternalFormat RG = new TextureInternalFormat(GL_RG);
-    public static final TextureInternalFormat RGB = new TextureInternalFormat(GL_RGB);
-    public static final TextureInternalFormat RGBA = new TextureInternalFormat(GL_RGBA);
+    public static final TextureInternalFormat DEPTH_COMPONENT16 = new TextureInternalFormat(GL_DEPTH_COMPONENT16);
+    public static final TextureInternalFormat DEPTH_COMPONENT24 = new TextureInternalFormat(GL_DEPTH_COMPONENT24);
+    public static final TextureInternalFormat DEPTH_COMPONENT32 = new TextureInternalFormat(GL_DEPTH_COMPONENT32);
+    public static final TextureInternalFormat DEPTH_COMPONENT32F = new TextureInternalFormat(GL_DEPTH_COMPONENT32F);
+    public static final TextureInternalFormat DEPTH32F_STENCIL8 = new TextureInternalFormat(GL_DEPTH32F_STENCIL8);
 
     public static final TextureInternalFormat R8 = new TextureInternalFormat(GL_R8);
     public static final TextureInternalFormat R8_SNORM = new TextureInternalFormat(GL_R8_SNORM);

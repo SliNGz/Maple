@@ -1,6 +1,8 @@
 package com.maple.game;
 
 import com.maple.content.ContentLoader;
+import com.maple.content.loaders.ShaderLoader;
+import com.maple.content.loaders.Texture2DLoader;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.GLFWHelper;
@@ -16,8 +18,11 @@ import com.maple.graphics.exceptions.WindowCreationFailedException;
 import com.maple.graphics.framebuffer.FramebufferCreator;
 import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.shader.IShader;
+import com.maple.graphics.shader.ShaderCreator;
 import com.maple.graphics.shader.binder.ShaderBinderCreator;
+import com.maple.graphics.texture.Texture2D;
 import com.maple.graphics.texture.Texture2DCreator;
+import com.maple.graphics.texture.parameters.TextureParametersSetter;
 import com.maple.graphics.window.Window;
 import com.maple.input.InputModeCallbackDispatcher;
 import com.maple.input.keyboard.KeyCallback;
@@ -42,6 +47,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.stb.STBImage.stbi_set_flip_vertically_on_load;
 
 public class MapleGame implements IGame {
     private final IGameCreator mGameCreator;
@@ -51,6 +57,7 @@ public class MapleGame implements IGame {
     private RendererCreator mRendererCreator;
     private Renderer mRenderer;
     private SpriteRenderer mSpriteRenderer;
+    private Texture2DCreator mTexture2DCreator;
     private GraphicsManager mGraphicsManager;
 
     private Keymap mKeymap;
@@ -77,6 +84,7 @@ public class MapleGame implements IGame {
         initializeGL();
         initializeKeyboard();
         initializeMouse();
+        initializeTexture2DCreator();
         initializeContentLoader();
         initializeRenderer();
         initializeGraphicsManager();
@@ -183,8 +191,16 @@ public class MapleGame implements IGame {
         GLFWHelper.setWindowInputMode(mWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 
+    private void initializeTexture2DCreator() {
+        stbi_set_flip_vertically_on_load(true);
+        TextureParametersSetter textureParametersSetter = new TextureParametersSetter();
+        mTexture2DCreator = new Texture2DCreator(textureParametersSetter);
+    }
+
     private void initializeContentLoader() {
         mContentLoader = new ContentLoader(mGameProperties.getContentFolder());
+        mContentLoader.addContentLoader(IShader.class, new ShaderLoader(new ShaderCreator()));
+        mContentLoader.addContentLoader(Texture2D.class, new Texture2DLoader(mTexture2DCreator));
     }
 
     private void cleanContentLoader() {
@@ -224,7 +240,6 @@ public class MapleGame implements IGame {
 
         mSpriteRenderer = new SpriteRenderer(mRenderer, spriteVertexShader, spriteFragmentShader, quadMesh);
 
-        Texture2DCreator texture2DCreator = new Texture2DCreator();
         FramebufferCreator framebufferCreator = new FramebufferCreator();
 
         mGraphicsManager = new GraphicsManager(mWindow,
@@ -234,6 +249,7 @@ public class MapleGame implements IGame {
                                                mRenderer,
                                                mSpriteRenderer,
                                                terrainMeshCreator,
+                                               mTexture2DCreator,
                                                framebufferCreator);
     }
 }
