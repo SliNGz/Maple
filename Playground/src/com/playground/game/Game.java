@@ -1,6 +1,7 @@
 package com.playground.game;
 
 import com.maple.content.ContentLoader;
+import com.maple.entity.IEntityManager;
 import com.maple.game.GameContext;
 import com.maple.game.IGame;
 import com.maple.game.exceptions.OperationFailedException;
@@ -35,9 +36,9 @@ import com.maple.math.Matrix4f;
 import com.maple.math.Vector3f;
 import com.maple.math.Vector4f;
 import com.maple.renderer.Renderer;
+import com.maple.renderer.camera.MouseRotationController;
 import com.maple.renderer.camera.OrthographicCamera;
 import com.maple.renderer.camera.PerspectiveCamera;
-import com.maple.renderer.camera.PerspectiveCameraController;
 import com.maple.renderer.mesh.Mesh;
 import com.maple.renderer.mesh.terrain.ITerrainColorizer;
 import com.maple.renderer.mesh.terrain.TerrainColorBufferCreator;
@@ -49,6 +50,8 @@ import com.maple.utils.Color;
 import com.maple.world.terrain.Terrain;
 import com.maple.world.terrain.TerrainCreator;
 import com.maple.world.terrain.heightmap.DefaultHeightMapGeneratorBuilder;
+import com.playground.entity.Player;
+import com.playground.entity.PlayerCreator;
 
 import java.util.List;
 
@@ -63,6 +66,7 @@ public class Game implements IGame {
     private IKeymap mKeymap;
     private ContentLoader mContentLoader;
     private IMousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
+    private IEntityManager mEntityManager;
 
     private IShader mVertexShader;
     private PhongFragmentShader mFragmentShader;
@@ -95,6 +99,8 @@ public class Game implements IGame {
     private Framebuffer mOrthographicCameraViewFramebuffer;
     private Framebuffer mHDRFramebuffer;
 
+    private Player mPlayer;
+
     public Game(GameContext context) {
         mGraphicsManager = context.getGraphicsManager();
         mWindow = mGraphicsManager.getWindow();
@@ -103,6 +109,7 @@ public class Game implements IGame {
         mKeymap = context.getKeymap();
         mContentLoader = context.getContentLoader();
         mMousePositionCallbackDispatcher = context.getMousePositionCallbackDispatcher();
+        mEntityManager = context.getEntityManager();
     }
 
     @Override
@@ -123,9 +130,6 @@ public class Game implements IGame {
         mShadowMappingEffect = new Effect(shadowMappingVertexShader, shadowMappingFragmentShader);
 
         mPerspectiveCamera = new PerspectiveCamera(45, mWindow.getAspectRatio(), 0.01F, 1000);
-        mPerspectiveCamera.setPosition(new Vector3f(40, 40, 40));
-        mPerspectiveCamera.addRotation(new Vector3f(MathHelper.toRadians(-30), MathHelper.toRadians(45), 0));
-        mMousePositionCallbackDispatcher.addDisabledCursorCallback(new PerspectiveCameraController(mPerspectiveCamera, 2.5F));
 
         initializeKeyBindings();
 
@@ -240,12 +244,21 @@ public class Game implements IGame {
                                                             TextureInternalFormat.RGB16F,
                                                             PixelDataFormat.RGB, PixelDataType.FLOAT);
         mHDRFramebuffer = framebufferCreator.create(hdrColorTexture, hdrDepthTexture);
+
+        PlayerCreator playerCreator = new PlayerCreator(mEntityManager);
+        mPlayer = playerCreator.create();
+        mPlayer.setPosition(new Vector3f(40, 40, 40));
+        mPlayer.addRotation(new Vector3f(MathHelper.toRadians(-30), MathHelper.toRadians(45), 0));
+
+        mMousePositionCallbackDispatcher.addDisabledCursorCallback(new MouseRotationController(mPlayer.getRotationComponent(), 2.5F));
     }
 
     @Override
     public void update(GameTime gameTime) {
 //        Logger.infoCore("Position: " + mOrthographicCamera.getPosition() +
 //                        " Rotation: " + MathHelper.toDegrees(mOrthographicCamera.getRotation().X));
+        mPerspectiveCamera.setPosition(mPlayer.getPosition());
+        mPerspectiveCamera.setRotation(mPlayer.getRotation());
     }
 
     boolean updateExposure = false;
@@ -283,7 +296,7 @@ public class Game implements IGame {
             shadowMappingFragmentShader.setLightPosition(mLightPosition);
             shadowMappingFragmentShader.setLightColor(mLightColor);
             shadowMappingFragmentShader.setLightAttenuationIntensity(0.001F);
-            shadowMappingFragmentShader.setAmbientIntensity(0.03F);
+            shadowMappingFragmentShader.setAmbientIntensity(0.2F);
             shadowMappingFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
 
             mRenderer.bindFramebuffer(mHDRFramebuffer);
@@ -316,9 +329,9 @@ public class Game implements IGame {
         mKeymap.add(new Key(GLFW_KEY_W), new IKeyAction() {
             @Override
             public void onKeyDown() {
-                Vector3f vector3f = Vector3f.createLookAt(mPerspectiveCamera.getRotation().X, mPerspectiveCamera.getRotation().Y);
+                Vector3f vector3f = Vector3f.createLookAt(mPlayer.getRotation().X, mPlayer.getRotation().Y);
                 vector3f.normalize();
-                mPerspectiveCamera.addPosition(vector3f);
+                mPlayer.addPosition(vector3f);
             }
 
             @Override
@@ -329,9 +342,9 @@ public class Game implements IGame {
             @Override
             public void onKeyDown() {
                 Vector3f vector3f = Vector3f.createLookAt(0,
-                                                          mPerspectiveCamera.getRotation().Y - MathHelper.PI / 2);
+                                                          mPlayer.getRotation().Y - MathHelper.PI / 2);
                 vector3f.normalize();
-                mPerspectiveCamera.addPosition(vector3f);
+                mPlayer.addPosition(vector3f);
             }
 
             @Override
@@ -341,11 +354,11 @@ public class Game implements IGame {
         mKeymap.add(new Key(GLFW_KEY_S), new IKeyAction() {
             @Override
             public void onKeyDown() {
-                Vector3f vector3f = Vector3f.createLookAt(mPerspectiveCamera.getRotation().X,
-                                                          mPerspectiveCamera.getRotation().Y);
+                Vector3f vector3f = Vector3f.createLookAt(mPlayer.getRotation().X,
+                                                          mPlayer.getRotation().Y);
                 vector3f.negate();
                 vector3f.normalize();
-                mPerspectiveCamera.addPosition(vector3f);
+                mPlayer.addPosition(vector3f);
             }
 
             @Override
@@ -356,9 +369,9 @@ public class Game implements IGame {
             @Override
             public void onKeyDown() {
                 Vector3f vector3f = Vector3f.createLookAt(0,
-                                                          mPerspectiveCamera.getRotation().Y + MathHelper.PI / 2);
+                                                          mPlayer.getRotation().Y + MathHelper.PI / 2);
                 vector3f.normalize();
-                mPerspectiveCamera.addPosition(vector3f);
+                mPlayer.addPosition(vector3f);
             }
 
             @Override
