@@ -3,6 +3,8 @@ package com.maple.game;
 import com.maple.content.ContentLoader;
 import com.maple.content.loaders.ShaderLoader;
 import com.maple.content.loaders.Texture2DLoader;
+import com.maple.entity.EntityManager;
+import com.maple.entity.component.EntityComponentManagers;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.GLFWHelper;
@@ -59,6 +61,7 @@ public class MapleGame implements IGame {
     private SpriteRenderer mSpriteRenderer;
     private Texture2DCreator mTexture2DCreator;
     private GraphicsManager mGraphicsManager;
+    private EntityManager mEntityManager;
 
     private Keymap mKeymap;
     private ContentLoader mContentLoader;
@@ -88,15 +91,17 @@ public class MapleGame implements IGame {
         initializeContentLoader();
         initializeRenderer();
         initializeGraphicsManager();
+        initializeEntityManager();
 
         GameContext gameContext = new GameContext(mGraphicsManager, mKeymap, mContentLoader,
-                                                  mMousePositionCallbackDispatcher);
+                                                  mMousePositionCallbackDispatcher, mEntityManager);
         mGame = mGameCreator.create(gameContext);
         mGame.initialize();
     }
 
     @Override
     public void update(GameTime gameTime) {
+        mEntityManager.update();
         mKeyboardUpdater.update();
         mGame.update(gameTime);
     }
@@ -110,6 +115,8 @@ public class MapleGame implements IGame {
     @Override
     public void cleanup() {
         mGame.cleanup();
+
+        mEntityManager.cleanup();
 
         cleanRenderer();
         cleanContentLoader();
@@ -251,5 +258,10 @@ public class MapleGame implements IGame {
                                                terrainMeshCreator,
                                                mTexture2DCreator,
                                                framebufferCreator);
+    }
+
+    private void initializeEntityManager() {
+        EntityComponentManagers entityComponentManagers = new EntityComponentManagers();
+        mEntityManager = new EntityManager(entityComponentManagers);
     }
 }
