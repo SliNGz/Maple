@@ -43,6 +43,7 @@ import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.renderer.mesh.terrain.TerrainPositionBufferCreator;
 import com.maple.renderer.sprite.SpriteRenderer;
 import com.maple.renderer.sprite.shader.SpriteVertexShader;
+import com.maple.utils.IFramesCounter;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -71,9 +72,12 @@ public class MapleGame implements IGame {
 
     private IGame mGame;
 
-    public MapleGame(IGameCreator gameCreator, GameProperties gameProperties) {
+    private IFramesCounter mFramesCounter;
+
+    public MapleGame(IGameCreator gameCreator, GameProperties gameProperties, IFramesCounter framesCounter) {
         mGameCreator = gameCreator;
         mGameProperties = gameProperties;
+        mFramesCounter = framesCounter;
     }
 
     @Override
@@ -93,7 +97,7 @@ public class MapleGame implements IGame {
         initializeGraphicsManager();
         initializeEntityManager();
 
-        GameContext gameContext = new GameContext(mGraphicsManager, mKeymap, mContentLoader,
+        GameContext gameContext = new GameContext(mFramesCounter, mGraphicsManager, mKeymap, mContentLoader,
                                                   mMousePositionCallbackDispatcher, mEntityManager);
         mGame = mGameCreator.create(gameContext);
         mGame.initialize();
