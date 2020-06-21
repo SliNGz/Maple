@@ -47,6 +47,7 @@ import com.maple.renderer.shader.PhongFragmentShader;
 import com.maple.renderer.sprite.Sprite;
 import com.maple.renderer.sprite.SpriteRenderer;
 import com.maple.utils.Color;
+import com.maple.utils.IFramesCounter;
 import com.maple.world.terrain.Terrain;
 import com.maple.world.terrain.TerrainCreator;
 import com.maple.world.terrain.heightmap.DefaultHeightMapGeneratorBuilder;
@@ -59,6 +60,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glViewport;
 
 public class Game implements IGame {
+    private IFramesCounter mFramesCounter;
     private GraphicsManager mGraphicsManager;
     private Window mWindow;
     private Renderer mRenderer;
@@ -102,6 +104,7 @@ public class Game implements IGame {
     private Player mPlayer;
 
     public Game(GameContext context) {
+        mFramesCounter = context.getFramesCounter();
         mGraphicsManager = context.getGraphicsManager();
         mWindow = mGraphicsManager.getWindow();
         mRenderer = mGraphicsManager.getRenderer();
