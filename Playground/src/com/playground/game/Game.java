@@ -19,7 +19,6 @@ import com.maple.graphics.framebuffer.Framebuffer;
 import com.maple.graphics.framebuffer.FramebufferCreator;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.effect.Effect;
-import com.maple.graphics.shader.exceptions.ShaderNotSetException;
 import com.maple.graphics.texture.*;
 import com.maple.graphics.texture.parameters.TextureParameterBorderColor;
 import com.maple.graphics.texture.parameters.TextureParameterWrap;
@@ -43,8 +42,9 @@ import com.maple.renderer.mesh.Mesh;
 import com.maple.renderer.mesh.terrain.ITerrainColorizer;
 import com.maple.renderer.mesh.terrain.TerrainColorBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
+import com.maple.renderer.model.Model;
+import com.maple.renderer.model.ModelMesh;
 import com.maple.renderer.shader.PhongFragmentShader;
-import com.maple.renderer.sprite.Sprite;
 import com.maple.renderer.sprite.SpriteRenderer;
 import com.maple.utils.Color;
 import com.maple.utils.IFramesCounter;
@@ -57,7 +57,6 @@ import com.playground.entity.PlayerCreator;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.glViewport;
 
 public class Game implements IGame {
     private IFramesCounter mFramesCounter;
@@ -102,6 +101,9 @@ public class Game implements IGame {
     private Framebuffer mHDRFramebuffer;
 
     private Player mPlayer;
+    private Model mCubeModel;
+
+    private Effect mBasicEffect;
 
     public Game(GameContext context) {
         mFramesCounter = context.getFramesCounter();
@@ -125,8 +127,12 @@ public class Game implements IGame {
         mSpriteFragmentShader = mContentLoader.load(IShader.class, "sprite_fragment_shader.fs");
 
         IShader colorVertexShader = mContentLoader.load(IShader.class, "color_shader.vs");
-//        IShader colorFragmentShader = mContentLoader.load(IShader.class, "color_shader.fs");
         mColorEffect = new Effect(colorVertexShader);
+
+        IShader basicVertexShader = mContentLoader.load(IShader.class, "basic_shader.vs");
+        mBasicEffect = new Effect(basicVertexShader);
+
+        mCubeModel = mContentLoader.load(Model.class, "cube.obj");
 
         IShader shadowMappingVertexShader = mContentLoader.load(IShader.class, "shadow_mapping.vs");
         IShader shadowMappingFragmentShader = mContentLoader.load(IShader.class, "shadow_mapping.fs");
@@ -280,43 +286,60 @@ public class Game implements IGame {
 //        mRenderer.render();
     }
 
+    float degrees = 0;
+
     @Override
     public void render(float alpha) {
-        try {
-            glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
-            mRenderer.bindFramebuffer(mShadowMapFramebuffer);
-            mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
-            mRenderer.setEffect(mColorEffect);
-            mRenderer.setViewProjectionMatrix(mOrthographicCamera.getViewProjectionMatrix());
-            renderScene();
-            mRenderer.unbindFramebuffer();
-
-            glViewport(0, 0, mWindow.getWidth(), mWindow.getHeight());
-            IShader shadowMappingVertexShader = mShadowMappingEffect.getVertexShader();
-            shadowMappingVertexShader.getUniformController().setMatrix4f("u_LightViewProjection",
-                                                                         mOrthographicCamera.getViewProjectionMatrix());
-            PhongFragmentShader shadowMappingFragmentShader = new PhongFragmentShader(mShadowMappingEffect.getFragmentShader());
-            shadowMappingFragmentShader.setLightPosition(mLightPosition);
-            shadowMappingFragmentShader.setLightColor(mLightColor);
-            shadowMappingFragmentShader.setLightAttenuationIntensity(0.001F);
-            shadowMappingFragmentShader.setAmbientIntensity(0.2F);
-            shadowMappingFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
-
-            mRenderer.bindFramebuffer(mHDRFramebuffer);
-            mRenderer.bindTexture(mShadowMapFramebuffer.getDepthBuffer());
-            mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
-            mRenderer.setEffect(mShadowMappingEffect);
+        mRenderer.clear(new Color(0.392F, 0.584F, 0.929F));
+        int i = 0;
+        for (ModelMesh modelMesh : mCubeModel.getMeshes()) {
+            ++i;
+            if (i == 2) {
+                degrees += 0.05F;
+                modelMesh.setModelMatrix(Matrix4f.createRotationX(MathHelper.toRadians(degrees)));
+            }
+            mRenderer.bindMesh(modelMesh.getMesh());
+            mRenderer.setEffect(mBasicEffect);
             mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
-            renderScene();
-            mRenderer.unbindFramebuffer();
-
-            mHDRFragmentShader.getUniformController().setFloat("u_Exposure", 0.1F);
-            mSpriteRenderer.beginScene(m2DCamera, mHDRFragmentShader);
-            mSpriteRenderer.render(new Sprite(mHDRFramebuffer.getColorBuffer()));
-            mSpriteRenderer.endScene();
-        } catch (ShaderNotSetException e) {
-            e.printStackTrace();
+            mRenderer.setModelMatrix(Matrix4f.multiply(modelMesh.getModelMatrix(), Matrix4f.createScale(new Vector3f(10, 10, 10))));
+            mRenderer.render();
         }
+
+//        try {
+//            glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+//            mRenderer.bindFramebuffer(mShadowMapFramebuffer);
+//            mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
+//            mRenderer.setEffect(mColorEffect);
+//            mRenderer.setViewProjectionMatrix(mOrthographicCamera.getViewProjectionMatrix());
+//            renderScene();
+//            mRenderer.unbindFramebuffer();
+//
+//            glViewport(0, 0, mWindow.getWidth(), mWindow.getHeight());
+//            IShader shadowMappingVertexShader = mShadowMappingEffect.getVertexShader();
+//            shadowMappingVertexShader.getUniformController().setMatrix4f("u_LightViewProjection",
+//                                                                         mOrthographicCamera.getViewProjectionMatrix());
+//            PhongFragmentShader shadowMappingFragmentShader = new PhongFragmentShader(mShadowMappingEffect.getFragmentShader());
+//            shadowMappingFragmentShader.setLightPosition(mLightPosition);
+//            shadowMappingFragmentShader.setLightColor(mLightColor);
+//            shadowMappingFragmentShader.setLightAttenuationIntensity(0.001F);
+//            shadowMappingFragmentShader.setAmbientIntensity(0.2F);
+//            shadowMappingFragmentShader.setCameraPosition(mPerspectiveCamera.getPosition());
+//
+//            mRenderer.bindFramebuffer(mHDRFramebuffer);
+//            mRenderer.bindTexture(mShadowMapFramebuffer.getDepthBuffer());
+//            mRenderer.clear(new Color(0.392F, 0.584F, 0.929F, 1.0F));
+//            mRenderer.setEffect(mShadowMappingEffect);
+//            mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
+//            renderScene();
+//            mRenderer.unbindFramebuffer();
+//
+//            mHDRFragmentShader.getUniformController().setFloat("u_Exposure", 0.1F);
+//            mSpriteRenderer.beginScene(m2DCamera, mHDRFragmentShader);
+//            mSpriteRenderer.render(new Sprite(mHDRFramebuffer.getColorBuffer()));
+//            mSpriteRenderer.endScene();
+//        } catch (ShaderNotSetException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override

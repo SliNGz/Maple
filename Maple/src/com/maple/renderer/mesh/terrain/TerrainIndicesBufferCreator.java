@@ -4,6 +4,7 @@ import com.maple.graphics.OpenGLType;
 import com.maple.graphics.buffer.BufferUsage;
 import com.maple.graphics.buffer.index.IndexBuffer;
 import com.maple.graphics.buffer.index.IndexBufferCreator;
+import com.maple.utils.IndexBufferUtils;
 import com.maple.world.terrain.Terrain;
 import org.lwjgl.BufferUtils;
 
@@ -20,7 +21,7 @@ public class TerrainIndicesBufferCreator {
 
     public IndexBuffer create(Terrain terrain) {
         int verticesCount = terrain.getWidth() * terrain.getLength();
-        OpenGLType indicesType = getIndicesType(verticesCount);
+        OpenGLType indicesType = IndexBufferUtils.getIndicesType(verticesCount);
         int indicesCount = (terrain.getWidth() - 1) * (terrain.getLength() - 1) * 6;
 
         ByteBuffer indicesByteBuffer = BufferUtils.createByteBuffer(indicesCount * indicesType.getSize());
@@ -33,16 +34,6 @@ public class TerrainIndicesBufferCreator {
         indicesByteBuffer.flip();
 
         return mIndexBufferCreator.create(indicesByteBuffer, BufferUsage.STATIC_DRAW, indicesType);
-    }
-
-    private OpenGLType getIndicesType(int verticesCount) {
-        if (verticesCount <= Byte.MAX_VALUE + Math.abs(Byte.MIN_VALUE)) {
-            return OpenGLType.UNSIGNED_BYTE;
-        } else if (verticesCount <= Short.MAX_VALUE + Math.abs(Short.MIN_VALUE)) {
-            return OpenGLType.UNSIGNED_SHORT;
-        }
-
-        return OpenGLType.UNSIGNED_INT;
     }
 
     private int getIndex(Terrain terrain, int x, int z) {

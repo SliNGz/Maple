@@ -3,6 +3,8 @@ package com.maple.game;
 import com.maple.content.ContentLoader;
 import com.maple.content.loaders.ShaderLoader;
 import com.maple.content.loaders.Texture2DLoader;
+import com.maple.content.loaders.model.AssimpMeshConverter;
+import com.maple.content.loaders.model.ModelLoader;
 import com.maple.entity.EntityManager;
 import com.maple.entity.component.EntityComponentManagers;
 import com.maple.game.exceptions.OperationFailedException;
@@ -41,6 +43,7 @@ import com.maple.renderer.mesh.quad.PositionTextureQuadMeshCreator;
 import com.maple.renderer.mesh.terrain.TerrainIndicesBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.renderer.mesh.terrain.TerrainPositionBufferCreator;
+import com.maple.renderer.model.Model;
 import com.maple.renderer.sprite.SpriteRenderer;
 import com.maple.renderer.sprite.shader.SpriteVertexShader;
 import com.maple.utils.IFramesCounter;
@@ -92,7 +95,6 @@ public class MapleGame implements IGame {
         initializeKeyboard();
         initializeMouse();
         initializeTexture2DCreator();
-        initializeContentLoader();
         initializeRenderer();
         initializeGraphicsManager();
         initializeEntityManager();
@@ -208,16 +210,6 @@ public class MapleGame implements IGame {
         mTexture2DCreator = new Texture2DCreator(textureParametersSetter);
     }
 
-    private void initializeContentLoader() {
-        mContentLoader = new ContentLoader(mGameProperties.getContentFolder());
-        mContentLoader.addContentLoader(IShader.class, new ShaderLoader(new ShaderCreator()));
-        mContentLoader.addContentLoader(Texture2D.class, new Texture2DLoader(mTexture2DCreator));
-    }
-
-    private void cleanContentLoader() {
-        mContentLoader.cleanup();
-    }
-
     private void initializeRenderer() {
         ShaderBinderCreator shaderBinderCreator = new ShaderBinderCreator();
         mRendererCreator = new RendererCreator(shaderBinderCreator);
@@ -241,6 +233,13 @@ public class MapleGame implements IGame {
                                                                        positionBufferCreator,
                                                                        terrainIndicesBufferCreator);
 
+        mContentLoader = new ContentLoader(mGameProperties.getContentFolder());
+        mContentLoader.addContentLoader(IShader.class, new ShaderLoader(new ShaderCreator()));
+        mContentLoader.addContentLoader(Texture2D.class, new Texture2DLoader(mTexture2DCreator));
+        mContentLoader.addContentLoader(Model.class, new ModelLoader(new AssimpMeshConverter(vertexArrayCreator,
+                                                                                             vertexBufferCreator,
+                                                                                             indexBufferCreator)));
+
         SpriteVertexShader spriteVertexShader = new SpriteVertexShader(mContentLoader.load(IShader.class, "sprite_vertex_shader.vs"));
         IShader spriteFragmentShader = mContentLoader.load(IShader.class, "sprite_fragment_shader.fs");
 
@@ -262,6 +261,10 @@ public class MapleGame implements IGame {
                                                terrainMeshCreator,
                                                mTexture2DCreator,
                                                framebufferCreator);
+    }
+
+    private void cleanContentLoader() {
+        mContentLoader.cleanup();
     }
 
     private void initializeEntityManager() {
