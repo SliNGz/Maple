@@ -1,6 +1,7 @@
 package com.playground.entity;
 
 import com.maple.entity.IEntity;
+import com.maple.entity.component.IComponent;
 import com.maple.entity.component.PositionComponent;
 import com.maple.entity.component.RotationComponent;
 import com.maple.math.Vector3f;
@@ -24,12 +25,12 @@ public class Player implements IEntity {
     }
 
     @Override
-    public Map<Class<?>, ?> getComponents() {
+    public Map<Class<? extends IComponent>, IComponent> getComponents() {
         return mEntity.getComponents();
     }
 
     @Override
-    public <T> T getComponent(Class<T> componentType) {
+    public <T extends IComponent> T getComponent(Class<T> componentType) {
         return mEntity.getComponent(componentType);
     }
 

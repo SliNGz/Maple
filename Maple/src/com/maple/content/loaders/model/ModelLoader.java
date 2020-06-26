@@ -5,7 +5,6 @@ import com.maple.content.loaders.model.exceptions.AssimpImportFileFailedExceptio
 import com.maple.content.loaders.model.exceptions.ModelLoadFailedException;
 import com.maple.graphics.buffer.index.IndexBufferCreator;
 import com.maple.graphics.buffer.vertex.VertexArrayCreator;
-import com.maple.log.Logger;
 import com.maple.math.Matrix4f;
 import com.maple.renderer.mesh.Mesh;
 import com.maple.renderer.model.Model;

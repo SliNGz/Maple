@@ -2,7 +2,7 @@ package com.maple.entity.component;
 
 import com.maple.math.Vector3f;
 
-public class PositionComponent {
+public class PositionComponent implements IComponent {
     private Vector3f mPosition;
 
     public PositionComponent(Vector3f position) {
