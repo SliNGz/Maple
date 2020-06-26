@@ -6,7 +6,7 @@ import com.maple.content.loaders.Texture2DLoader;
 import com.maple.content.loaders.model.AssimpMeshConverter;
 import com.maple.content.loaders.model.ModelLoader;
 import com.maple.entity.EntityManager;
-import com.maple.entity.component.EntityComponentManagers;
+import com.maple.entity.component.ComponentSystemsManager;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.GLFWHelper;
@@ -107,13 +107,14 @@ public class MapleGame implements IGame {
 
     @Override
     public void update(GameTime gameTime) {
-        mEntityManager.update();
+        mEntityManager.update(gameTime);
         mKeyboardUpdater.update();
         mGame.update(gameTime);
     }
 
     @Override
     public void render(float alpha) {
+        mEntityManager.render(alpha);
         mGame.render(alpha);
         GLFWHelper.swapBuffers(mWindow);
     }
@@ -268,7 +269,7 @@ public class MapleGame implements IGame {
     }
 
     private void initializeEntityManager() {
-        EntityComponentManagers entityComponentManagers = new EntityComponentManagers();
-        mEntityManager = new EntityManager(entityComponentManagers);
+        ComponentSystemsManager componentSystemsManager = new ComponentSystemsManager();
+        mEntityManager = new EntityManager(componentSystemsManager);
     }
 }
