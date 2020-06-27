@@ -1,7 +1,7 @@
 package com.maple.entity;
 
-import com.maple.entity.component.ComponentSystemsManager;
 import com.maple.entity.component.IComponent;
+import com.maple.entity.component.system.ComponentSystemsManager;
 import com.maple.entity.exceptions.EntityNotFoundException;
 import com.maple.game.runner.GameTime;
 
@@ -52,10 +52,6 @@ public class EntityManager implements IEntityManager {
 
     public void update(GameTime gameTime) {
         mComponentSystemsManager.update(gameTime);
-    }
-
-    public void render(float alpha) {
-        mComponentSystemsManager.render(alpha);
     }
 
     public void cleanup() {
