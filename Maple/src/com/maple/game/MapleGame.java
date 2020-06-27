@@ -6,7 +6,9 @@ import com.maple.content.loaders.Texture2DLoader;
 import com.maple.content.loaders.model.AssimpMeshConverter;
 import com.maple.content.loaders.model.ModelLoader;
 import com.maple.entity.EntityManager;
-import com.maple.entity.component.ComponentSystemsManager;
+import com.maple.entity.component.model.ModelComponent;
+import com.maple.entity.component.model.ModelComponentSystem;
+import com.maple.entity.component.system.ComponentSystemsManager;
 import com.maple.game.exceptions.OperationFailedException;
 import com.maple.game.runner.GameTime;
 import com.maple.graphics.GLFWHelper;
@@ -24,6 +26,7 @@ import com.maple.graphics.monitor.Monitor;
 import com.maple.graphics.shader.IShader;
 import com.maple.graphics.shader.ShaderCreator;
 import com.maple.graphics.shader.binder.ShaderBinderCreator;
+import com.maple.graphics.shader.effect.Effect;
 import com.maple.graphics.texture.Texture2D;
 import com.maple.graphics.texture.Texture2DCreator;
 import com.maple.graphics.texture.parameters.TextureParametersSetter;
@@ -44,6 +47,10 @@ import com.maple.renderer.mesh.terrain.TerrainIndicesBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.renderer.mesh.terrain.TerrainPositionBufferCreator;
 import com.maple.renderer.model.Model;
+import com.maple.renderer.model.ModelRenderer;
+import com.maple.renderer.scene.EntityRenderer;
+import com.maple.renderer.scene.SceneProperties;
+import com.maple.renderer.scene.SceneRenderer;
 import com.maple.renderer.sprite.SpriteRenderer;
 import com.maple.renderer.sprite.shader.SpriteVertexShader;
 import com.maple.utils.IFramesCounter;
@@ -66,6 +73,7 @@ public class MapleGame implements IGame {
     private Texture2DCreator mTexture2DCreator;
     private GraphicsManager mGraphicsManager;
     private EntityManager mEntityManager;
+    private SceneRenderer mSceneRenderer;
 
     private Keymap mKeymap;
     private ContentLoader mContentLoader;
@@ -76,6 +84,8 @@ public class MapleGame implements IGame {
     private IGame mGame;
 
     private IFramesCounter mFramesCounter;
+
+    private ModelComponentSystem mModelComponentSystem;
 
     public MapleGame(IGameCreator gameCreator, GameProperties gameProperties, IFramesCounter framesCounter) {
         mGameCreator = gameCreator;
@@ -98,9 +108,10 @@ public class MapleGame implements IGame {
         initializeRenderer();
         initializeGraphicsManager();
         initializeEntityManager();
+        initializeSceneRenderer();
 
         GameContext gameContext = new GameContext(mFramesCounter, mGraphicsManager, mKeymap, mContentLoader,
-                                                  mMousePositionCallbackDispatcher, mEntityManager);
+                                                  mMousePositionCallbackDispatcher, mEntityManager, mSceneRenderer);
         mGame = mGameCreator.create(gameContext);
         mGame.initialize();
     }
@@ -114,7 +125,7 @@ public class MapleGame implements IGame {
 
     @Override
     public void render(float alpha) {
-        mEntityManager.render(alpha);
+        mSceneRenderer.render(alpha);
         mGame.render(alpha);
         GLFWHelper.swapBuffers(mWindow);
     }
@@ -270,6 +281,17 @@ public class MapleGame implements IGame {
 
     private void initializeEntityManager() {
         ComponentSystemsManager componentSystemsManager = new ComponentSystemsManager();
+        mModelComponentSystem = new ModelComponentSystem();
+        componentSystemsManager.addComponentSystem(ModelComponent.class, mModelComponentSystem);
         mEntityManager = new EntityManager(componentSystemsManager);
+    }
+
+    private void initializeSceneRenderer() {
+        ModelRenderer modelRenderer = new ModelRenderer(mRenderer);
+        EntityRenderer entityRenderer = new EntityRenderer(modelRenderer);
+        IShader basicVertexShader = mContentLoader.load(IShader.class, "basic_shader.vs");
+        Effect effect = new Effect(basicVertexShader);
+
+        mSceneRenderer = new SceneRenderer(mModelComponentSystem, entityRenderer, effect, new SceneProperties());
     }
 }

@@ -2,6 +2,9 @@ package com.playground.game;
 
 import com.maple.content.ContentLoader;
 import com.maple.entity.IEntityManager;
+import com.maple.entity.component.PositionComponent;
+import com.maple.entity.component.RotationComponent;
+import com.maple.entity.component.ScaleComponent;
 import com.maple.game.GameContext;
 import com.maple.game.IGame;
 import com.maple.game.exceptions.OperationFailedException;
@@ -43,7 +46,8 @@ import com.maple.renderer.mesh.terrain.ITerrainColorizer;
 import com.maple.renderer.mesh.terrain.TerrainColorBufferCreator;
 import com.maple.renderer.mesh.terrain.TerrainMeshCreator;
 import com.maple.renderer.model.Model;
-import com.maple.renderer.model.ModelMesh;
+import com.maple.renderer.scene.ISceneRenderer;
+import com.maple.renderer.scene.SceneProperties;
 import com.maple.renderer.shader.PhongFragmentShader;
 import com.maple.renderer.sprite.SpriteRenderer;
 import com.maple.utils.Color;
@@ -51,10 +55,13 @@ import com.maple.utils.IFramesCounter;
 import com.maple.world.terrain.Terrain;
 import com.maple.world.terrain.TerrainCreator;
 import com.maple.world.terrain.heightmap.DefaultHeightMapGeneratorBuilder;
+import com.playground.entity.Cube;
+import com.playground.entity.CubeCreator;
 import com.playground.entity.Player;
 import com.playground.entity.PlayerCreator;
 
 import java.util.List;
+import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -68,6 +75,8 @@ public class Game implements IGame {
     private ContentLoader mContentLoader;
     private IMousePositionCallbackDispatcher mMousePositionCallbackDispatcher;
     private IEntityManager mEntityManager;
+    private ISceneRenderer mSceneRenderer;
+    private SceneProperties mSceneProperties;
 
     private IShader mVertexShader;
     private PhongFragmentShader mFragmentShader;
@@ -101,7 +110,9 @@ public class Game implements IGame {
     private Framebuffer mHDRFramebuffer;
 
     private Player mPlayer;
+
     private Model mCubeModel;
+    private Cube[] mCubes;
 
     private Effect mBasicEffect;
 
@@ -115,6 +126,8 @@ public class Game implements IGame {
         mContentLoader = context.getContentLoader();
         mMousePositionCallbackDispatcher = context.getMousePositionCallbackDispatcher();
         mEntityManager = context.getEntityManager();
+        mSceneRenderer = context.getSceneRenderer();
+        mSceneProperties = mSceneRenderer.getProperties();
     }
 
     @Override
@@ -260,14 +273,34 @@ public class Game implements IGame {
         mPlayer.addRotation(new Vector3f(MathHelper.toRadians(-30), MathHelper.toRadians(45), 0));
 
         mMousePositionCallbackDispatcher.addDisabledCursorCallback(new MouseRotationController(mPlayer.getRotationComponent(), 2.5F));
+        mSceneProperties.setCamera(mPerspectiveCamera);
+
+        CubeCreator cubeCreator = new CubeCreator(mEntityManager, mCubeModel);
+        mCubes = new Cube[100];
+        Random random = new Random();
+
+        for (int i = 0; i < 30; ++i) {
+            Cube cube = cubeCreator.create();
+            PositionComponent positionComponent = cube.getComponent(PositionComponent.class);
+            positionComponent.add(new Vector3f(random.nextInt(500), random.nextInt(500), random.nextInt(500)));
+
+            RotationComponent rotationComponent = cube.getComponent(RotationComponent.class);
+            rotationComponent.add(new Vector3f(MathHelper.toRadians(random.nextInt(360)),
+                                               MathHelper.toRadians(random.nextInt(360)),
+                                               MathHelper.toRadians(random.nextInt(360))));
+
+            ScaleComponent scaleComponent = cube.getComponent(ScaleComponent.class);
+            float scale = random.nextInt(30);
+            scaleComponent.set(new Vector3f(scale, scale, scale));
+        }
     }
 
     @Override
     public void update(GameTime gameTime) {
 //        Logger.infoCore("Position: " + mOrthographicCamera.getPosition() +
 //                        " Rotation: " + MathHelper.toDegrees(mOrthographicCamera.getRotation().X));
-        mPerspectiveCamera.setPosition(mPlayer.getPosition());
-        mPerspectiveCamera.setRotation(mPlayer.getRotation());
+//        mPerspectiveCamera.setPosition(mPlayer.getPosition());
+//        mPerspectiveCamera.setRotation(mPlayer.getRotation());
     }
 
     boolean updateExposure = false;
@@ -290,20 +323,8 @@ public class Game implements IGame {
 
     @Override
     public void render(float alpha) {
-        mRenderer.clear(new Color(0.392F, 0.584F, 0.929F));
-        int i = 0;
-        for (ModelMesh modelMesh : mCubeModel.getMeshes()) {
-            ++i;
-            if (i == 2) {
-                degrees += 0.05F;
-                modelMesh.setModelMatrix(Matrix4f.createRotationX(MathHelper.toRadians(degrees)));
-            }
-            mRenderer.bindMesh(modelMesh.getMesh());
-            mRenderer.setEffect(mBasicEffect);
-            mRenderer.setViewProjectionMatrix(mPerspectiveCamera.getViewProjectionMatrix());
-            mRenderer.setModelMatrix(Matrix4f.multiply(modelMesh.getModelMatrix(), Matrix4f.createScale(new Vector3f(10, 10, 10))));
-            mRenderer.render();
-        }
+        mPerspectiveCamera.setPosition(mPlayer.getPosition());
+        mPerspectiveCamera.setRotation(mPlayer.getRotation());
 
 //        try {
 //            glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
